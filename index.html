@@ -1,0 +1,3284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.Tech IP Analyzer (Module 4 Project)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Hide AI buttons safely */
+#explainBtn,
+#divExplainBtn {
+  display: none !important;
+}
+
+        /* Our CSS file... stuck in the HTML for easy submission */
+        /* Prof said to use Inter, so we are */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        
+        /* The main container for everything */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden; /* To keep the header radius */
+        }
+
+        header {
+            /* Copied the blue from the college website */
+            background: #020202;
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            /* --- UI/UX Animation --- */
+            background-image: linear-gradient(to right, #020202, #333333);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        header p {
+            margin: 5px 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* NEW button styles for top-right nav */
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* NEW Modal Styles (for Learn, Help, Dev) */
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e5f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #007bff; /* Match header */
+            border-bottom: none; /* Override h2 default */
+            padding-bottom: 0;
+        }
+        .modal-close-btn {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+        .modal-close-btn:hover {
+            color: #333;
+        }
+        .modal-body p {
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+        .modal-body ul, .modal-body ol {
+            list-style-type: disc;
+            padding-left: 25px;
+            margin-bottom: 15px;
+            line-height: 1.7;
+        }
+        .modal-body ol {
+            list-style-type: decimal;
+        }
+        .modal-body code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .modal-body h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        /* Utility to hide modals */
+        /* .hidden is provided by Tailwind */
+
+        .content-section {
+            padding: 25px;
+            border-bottom: 1px solid #dddddd;
+        }
+        .content-section:last-child {
+            border-bottom: none;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            color: #007bff;
+            margin-top: 0;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        /* Input stuff */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 768px) {
+            .input-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            box-sizing: border-box; /* So padding doesn't break layout */
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* Base button style */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #analyzeBtn {
+            background: #28a745;
+            color: white;
+        }
+        #analyzeBtn:hover {
+            background: #218838;
+        }
+        #resetBtn {
+            background: #dc3545;
+            color: white;
+        }
+        #resetBtn:hover {
+            background: #c82333;
+        }
+        
+        #explainBtn {
+            background: #17a2b8;
+            color: white;
+            font-size: 1rem;
+            padding: 10px 20px;
+        }
+        #explainBtn:hover {
+            background: #138496;
+        }
+        
+        /* Sample IPs for quick demo */
+        .sample-ips {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .sample-ips button {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            color: #007bff;
+            padding: 5px 10px;
+            margin: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .sample-ips button:hover {
+            background: #e0e0e0;
+        }
+
+        /* Results */
+        #resultsPanel {
+            display: none; /* Hidden by default */
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .result-item {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 4px;
+            transition: all 0.2s ease-out; /* --- UI/UX Animation --- */
+        }
+        .result-item strong {
+            display: block;
+            font-size: 0.9rem;
+            color: #777;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .result-item span {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            word-break: break-all;
+        }
+        /* --- UI/UX Animation --- */
+        .result-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* Visualizations */
+         .ip-space-bar {
+            display: flex;
+            width: 100%;
+            height: 40px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+            background: #f1f5f9;
+        }
+        .ip-space-bar .block {
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            transition: all 0.5s ease; /* --- UI/UX Animation --- */
+        }
+        .tooltip {
+            visibility: hidden;
+            width: 200px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            line-height: 1.4;
+            text-shadow: none;
+            pointer-events: none;
+        }
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent;
+        }
+        .ip-space-bar .block .tooltip {
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+        }
+        .ip-space-bar .block:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .ip-marker {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 12px solid #ef4444;
+            z-index: 5;
+            transition: all 0.5s ease-in-out;
+        }
+        .ip-marker-label {
+            position: absolute;
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: #ef4444;
+            transition: all 0.5s ease-in-out;
+        }
+        
+        /* "hacker" binary view */
+        #binaryView {
+            display: none; /* Toggled by JS */
+            background: #2b2b2b;
+            color: #00ff00; /* Classic green */
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        #binaryView .label {
+            color: #888;
+            width: 110px; /* Fixed width for alignment */
+            display: inline-block;
+        }
+        .net-part-text {
+            color: #66d9ef; /* A nice blue for network */
+            font-weight: bold;
+        }
+        .host-part-text {
+            color: #f59e0b; /* Bright orange for host */
+            font-weight: bold;
+        }
+        
+        /* Boxes for explanations */
+        .reason-box {
+            background: #e6f7ff;
+            border-left: 5px solid #007bff;
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+        #subnetComparison {
+            display: none;
+            background: #fffbe6;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            border-radius: 0 4px 4px 0;
+            margin-top: 20px;
+        }
+        #comp-reason {
+            font-size: 1.1rem;
+            margin-top: 15px;
+            color: #856404;
+        }
+
+        /* Error box */
+        #errorPanel {
+            display: none;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 0 25px 20px 25px;
+        }
+        
+        /* Educational collapsible */
+        details {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        details summary {
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 15px;
+            cursor: pointer;
+            outline: none;
+        }
+        .edu-content {
+            padding: 0 20px 20px 20px;
+            line-height: 1.6;
+        }
+        .edu-content ul {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        .edu-content code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* NEW Gemini AI Panel */
+        #geminiExplainPanel {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+            background: #f0f9ff;
+            border: 1px solid #b3e5fc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #geminiExplainPanel h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: #e0f2fe;
+            padding: 15px 20px;
+            color: #0c5460;
+            border-bottom: 1px solid #b3e5fc;
+            margin: 0;
+        }
+        #geminiExplainContent {
+            padding: 20px;
+            line-height: 1.7;
+            color: #333;
+        }
+        /* AI content styling */
+        #geminiExplainContent strong {
+            color: #429bdf;
+        }
+        #geminiExplainContent ul {
+            list-style-type: disc;
+            padding-left: 25px;
+            margin: 10px 0;
+        }
+        #geminiExplainContent code {
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95em;
+        }
+        .loading-text {
+            color: #555;
+            font-style: italic;
+        }
+        .error-text {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        /* --- UI/UX Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .btn, .btn-small, .sample-ip {
+            transition: all 0.2s ease-out;
+        }
+        .btn:hover, .btn-small:hover, .sample-ip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Animate the Network/Host bar */
+        #netHostBar .block {
+            transition: width 0.6s ease-in-out;
+        }
+        /* --- End UI/UX Animations --- */
+
+        /* ===== ISP Block Allocation Styles ===== */
+        .isp-section {
+            border-top: 4px solid #6366f1;
+        }
+        .isp-section h2 {
+            color: #6366f1;
+        }
+        .isp-header-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .isp-group-card {
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s;
+        }
+        .isp-group-card:hover {
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+            border-color: #c7d2fe;
+        }
+        .isp-group-card h4 {
+            margin: 0 0 12px 0;
+            color: #4f46e5;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .isp-group-card .isp-input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .isp-group-card label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .isp-group-card input {
+            padding: 8px 12px;
+            font-size: 0.95rem;
+        }
+        .isp-prefill-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .isp-prefill-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+        .isp-add-remove-btn {
+            background: #e0e7ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .isp-add-remove-btn:hover {
+            background: #c7d2fe;
+        }
+        .isp-add-remove-btn.remove {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+        .isp-add-remove-btn.remove:hover {
+            background: #fecaca;
+        }
+        /* ISP Results */
+        .isp-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .isp-summary-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .isp-summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .isp-summary-card .card-label {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+        .isp-summary-card .card-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-top: 4px;
+        }
+        .isp-summary-card .card-value.text-green { color: #16a34a; }
+        .isp-summary-card .card-value.text-red { color: #dc2626; }
+        .isp-summary-card .card-value.text-indigo { color: #6366f1; }
+        /* Address Space Progress Bar */
+        .isp-space-bar-container {
+            margin: 20px 0;
+        }
+        .isp-space-bar {
+            width: 100%;
+            height: 32px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            border: 2px solid #e2e8f0;
+        }
+        .isp-space-bar .isp-bar-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            transition: width 0.6s ease;
+            position: relative;
+        }
+        .isp-space-bar .isp-bar-segment .isp-bar-tooltip {
+            visibility: hidden; opacity: 0;
+            position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
+            background: #1f2937; color: #fff; padding: 6px 10px; border-radius: 6px;
+            font-size: 11px; white-space: nowrap; z-index: 10;
+            pointer-events: none; transition: opacity 0.2s;
+            text-shadow: none;
+        }
+        .isp-space-bar .isp-bar-segment .isp-bar-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%; margin-left: -4px;
+            border: 4px solid transparent; border-top-color: #1f2937;
+        }
+        .isp-space-bar .isp-bar-segment:hover .isp-bar-tooltip {
+            visibility: visible; opacity: 1;
+        }
+        .isp-bar-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+        .isp-bar-legend span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .isp-bar-legend .legend-dot {
+            width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+        }
+        /* ISP Results Table */
+        .isp-results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            font-size: 0.85rem;
+        }
+        .isp-results-table thead th {
+            background: linear-gradient(135deg, #6366f1, #818cf8);
+            color: white;
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .isp-results-table tbody td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #f3f4f6;
+            color: #374151;
+        }
+        .isp-results-table tbody tr:hover {
+            background: #f5f3ff;
+        }
+        .isp-results-table tbody tr.group-header-row {
+            background: #eef2ff;
+        }
+        .isp-results-table tbody tr.group-header-row td {
+            font-weight: 700;
+            color: #4338ca;
+            border-bottom: 2px solid #c7d2fe;
+        }
+        .isp-results-table tbody tr.remaining-row {
+            background: #f0fdf4;
+        }
+        .isp-results-table tbody tr.remaining-row td {
+            font-weight: 600;
+            color: #16a34a;
+            border-bottom: 2px solid #bbf7d0;
+        }
+        .isp-results-table .mono {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="container">
+        <header class="shadow-lg">
+            <h1>IP Analyzer and Visualizer</h1>
+            <p>(Computer Network Project Submission)</p>
+        </header>
+        
+        <div class="top-nav-buttons flex justify-end gap-2 p-4 bg-gray-50 border-b border-gray-200">
+            <button id="learnBtn" class="btn-small btn-secondary">🎓 Learn</button>
+            <button id="printBtn" class="btn-small btn-secondary">📥 Download Report</button>
+            <button id="helpBtn" class="btn-small btn-secondary">❓ Help</button>
+            <button id="devBtn" class="btn-small btn-secondary">👨‍💻 Developed By</button>
+        </div>
+
+        <section class="content-section">
+            <h2>📝 1. Input Details</h2>
+            <div class="input-grid">
+                <div>
+                    <label for="ipInput">IP Address:</label>
+                    <input type="text" id="ipInput" placeholder="e.g., 172.16.10.20">
+                </div>
+                <div>
+                    <label for="maskInput">Subnet Mask / Prefix (Optional):</label>
+                    <input type="text" id="maskInput" placeholder="e.g., /26 or 255.255.255.192">
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button id="resetBtn" class="btn">Reset</button>
+                <button id="analyzeBtn" class="btn">Analyze IP</button>
+            </div>
+            
+            <div class="sample-ips">
+                <span style="font-weight: 600;">Quick Test IPs (for demo):</span>
+                <button class="sample-ip" data-ip="10.50.1.1" data-mask="">Class A</button>
+                <button class="sample-ip" data-ip="150.100.20.1" data-mask="">Class B</button>
+                <button class="sample-ip" data-ip="192.168.1.1" data-mask="/24">Class C</button>
+                <button class="sample-ip" data-ip="150.100.20.1" data-mask="/26">Subnetted</button>
+                <button class="sample-ip" data-ip="224.0.0.1" data-mask="">Class D</button>
+                <button class="sample-ip" data-ip="127.0.0.1" data-mask="">Loopback</button>
+            </div>
+            
+            <div class="mt-6 border-t border-gray-200 pt-4">
+                <label for="binaryToggle" class="flex items-center cursor-pointer">
+                    <input type="checkbox" id="binaryToggle" class="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+                    <span class="ml-2 text-md font-medium text-gray-700">Toggle Binary Mode </span>
+                </label>
+            </div>
+        </section>
+
+        <div id="errorPanel">
+            <strong style="display: block; margin-bottom: 5px;">Oops! Error:</strong>
+            <span id="errorMessage"></span>
+        </div>
+        
+        <section id="resultsPanel" class="content-section">
+            <div class="mb-4">
+                <h2>📈 2. Analysis & Visuals</h2>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Total IP Space (by First Octet)</h3>
+                <div class="relative w-full pb-12">
+                    <div id="visualizationBar" class="ip-space-bar">
+                        </div>
+                </div>
+                <div id="ipSpaceLegend" class="flex flex-wrap gap-x-4 gap-y-2 text-xs mt-2">
+                    </div>
+            </div>
+            
+            <div class="mt-8">
+                <h3 class="text-lg font-medium text-gray-700 mb-2">Network vs. Host Bits (for /<span id="res-prefix"></span> Mask)</h3>
+                <div id="netHostBar" class="w-full h-10 flex rounded-lg overflow-hidden border border-gray-300">
+                    </div>
+            </div>
+
+            <h3 class="text-xl font-semibold text-gray-800 my-6">Address Details:</h3>
+            <div class="result-grid">
+                <div class="result-item">
+                    <strong>Address Class</strong>
+                    <span id="res-class"></span>
+                </div>
+                <div class="result-item">
+                    <strong>Special Type</strong>
+                    <span id="res-ip-type"></span>
+                </div>
+                <div class="result-item">
+                    <strong>Active Subnet Mask</strong>
+                    <span id="res-mask"></span>
+                </div>
+                <div class="result-item">
+                    <strong>Network ID</strong>
+                    <span id="res-network"></span>
+                </div>
+                
+                <div class="result-item">
+                    <strong>Total Usable Hosts</strong>
+                    <span id="res-hosts"></span>
+                </div>
+                <div class="result-item">
+                    <strong>Usable Host Range</strong>
+                    <span id="res-host-range"></span>
+                </div>
+                <div class="result-item">
+                    <strong>Broadcast Address</strong>
+                    <span id="res-broadcast"></span>
+                </div>
+            </div>
+            
+            <div id="subnetComparison">
+                <h3 style="font-size: 1.2rem; color: #856404; margin-top: 0;">Classful vs. Subnet Comparison:</h3>
+                <div class="result-grid">
+                    <div class="result-item">
+                        <strong>Classful Hosts</strong>
+                        <span id="comp-class-hosts"></span>
+                    </div>
+                    <div class="result-item">
+                        <strong>Subnets Created</strong>
+                        <span id="comp-subnets"></span>
+                    </div>
+                    <div class="result-item">
+                        <strong>Bits Borrowed</strong>
+                        <span id="comp-borrowed-bits"></span>
+                    </div>
+                </div>
+                <p id="comp-reason"></p>
+            </div>
+
+            <div class="reason-box">
+                <strong style="color: #0056b3;">💡 How We Know:</strong>
+                <p id="res-reason" style="margin: 5px 0 0;"></p>
+            </div>
+
+            <div id="binaryView">
+                <div><span class="label">Address:</span> <span id="res-binary-ip"></span></div>
+                <div><span class="label">Mask:</span> <span id="res-binary-mask"></span></div>
+                <div><span class="label">Network:</span> <span id="res-binary-net"></span></div>
+                <div><span class="label">Broadcast:</span> <span id="res-binary-bcast"></span></div>
+            </div>
+            
+            <div class="mt-6 text-center">
+                 <button id="explainBtn" class="btn">🤖 Explain these results with AI</button>
+            </div>
+            
+            <div id="geminiExplainPanel">
+                <h3>🎓 AI Teaching Assistant</h3>
+                <div id="geminiExplainContent">
+                    </div>
+            </div>
+
+        </section>
+
+        <section class="content-section">
+            <h2>📊 Network Division & Subnet Allocation</h2>
+            
+            <p class="text-gray-700 -mt-2 mb-4">This tool will use the IP and Mask from "1. Input Details" to find the base network, then divide it.</p>
+
+            <div class="mt-4 border-t border-gray-200 pt-4">
+                <label class="font-medium text-gray-700">Division Method:</label>
+                <div class="flex flex-wrap gap-6 mt-2">
+                    <label class="flex items-center">
+                        <input type="radio" name="divMethod" id="divMethodEqual" value="equal" class="h-5 w-5 text-blue-600" checked>
+                        <span class="ml-2">Divide Equally</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="divMethod" id="divMethodUnequal" value="unequal" class="h-5 w-5 text-blue-600">
+                        <span class="ml-2">Divide Unequally (VLSM)</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="divMethod" id="divMethodCustomer" value="customer" class="h-5 w-5 text-blue-600">
+                        <span class="ml-2">Divide by Customers (Hierarchical)</span>
+                    </label>
+                    </div>
+            </div>
+
+            <div id="divEqualPanel" class="mt-4">
+                <label for="divEqualNetworks">Number of Networks:</label>
+                <input type="text" id="divEqualNetworks" placeholder="e.g., 5">
+            </div>
+
+            <div id="divUnequalPanel" class="mt-4 hidden">
+                <label for="divUnequalNetworks">Number of Networks:</label>
+                <input type="text" id="divUnequalNetworks" placeholder="e.g., 3">
+                <div id="divUnequalHostInputs" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    </div>
+            </div>
+
+            <div id="divCustomerPanel" class="mt-4 hidden">
+                <label for="divCustomerCount">Number of Customers:</label>
+                <input type="text" id="divCustomerCount" placeholder="e.g., 2">
+                <div id="divCustomerHostInputs" class="mt-4 grid grid-cols-1 gap-6">
+                    </div>
+            </div>
+            <div class="button-container">
+                <button id="divResetBtn" class="btn" style="background-color: #dc3545; color: white;">🔄 Reset Division</button>
+                <button id="divAnalyzeBtn" class="btn" style="background-color: #28a745; color: white;">🧮 Analyze Division</button>
+            </div>
+
+            <div id="divErrorPanel" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                <strong class="font-bold">Error:</strong>
+                <span id="divErrorMessage"></span>
+            </div>
+
+            <div id="divResultsPanel" class="hidden mt-6">
+                <h3 class="text-xl font-semibold text-gray-800 my-6">Subnet Allocation Table</h3>
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead id="divTableHead" class="bg-gray-50">
+                            </thead>
+                        <tbody id="divTableBody" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 text-center">
+                     <button id="divExplainBtn" class="btn" style="background-color: #17a2b8; color: white;">🤖 Explain Subnet Distribution</button>
+                </div>
+                
+                <div id="divGeminiExplainPanel" class="hidden mt-4 bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+                    <h3 class="text-lg font-semibold bg-blue-100 py-3 px-5 text-blue-800">🎓 AI Teaching Assistant (Subnets)</h3>
+                    <div id="divGeminiExplainContent" class="p-5">
+                        </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== NEW: ISP Block Allocation Section ===== -->
+        <section class="content-section isp-section" id="ispSection">
+            <h2>🌐 ISP Block Allocation <span class="isp-header-badge">Type 4</span></h2>
+            <p class="text-gray-600 -mt-2 mb-4">An ISP receives a large block of IP addresses and distributes them to multiple customer groups. This tool designs the subblocks and calculates remaining addresses.</p>
+
+            <div class="input-grid mb-4">
+                <div>
+                    <label for="ispStartIp">ISP Starting Address:</label>
+                    <input type="text" id="ispStartIp" placeholder="e.g., 190.100.0.0">
+                </div>
+                <div>
+                    <label for="ispPrefix">Block Prefix:</label>
+                    <input type="text" id="ispPrefix" placeholder="e.g., /16">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="ispPrefillBtn" class="isp-prefill-btn">📋 Load Textbook Example (190.100.0.0/16)</button>
+                <button id="ispAddGroupBtn" class="isp-add-remove-btn">+ Add Group</button>
+            </div>
+
+            <div id="ispGroupsContainer" class="flex flex-col gap-3 mb-4">
+                <!-- Groups will be dynamically inserted here -->
+            </div>
+
+            <div class="button-container">
+                <button id="ispResetBtn" class="btn" style="background-color: #dc3545; color: white;">🔄 Reset</button>
+                <button id="ispAnalyzeBtn" class="btn" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;">🚀 Allocate Blocks</button>
+            </div>
+
+            <div id="ispErrorPanel" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                <strong class="font-bold">Error:</strong>
+                <span id="ispErrorMessage"></span>
+            </div>
+
+            <div id="ispResultsPanel" class="hidden mt-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">📊 Allocation Results</h3>
+
+                <div id="ispSummaryGrid" class="isp-summary-grid"></div>
+
+                <div class="isp-space-bar-container">
+                    <h4 class="text-sm font-semibold text-gray-600 mb-2">Address Space Utilization</h4>
+                    <div id="ispSpaceBar" class="isp-space-bar"></div>
+                    <div id="ispBarLegend" class="isp-bar-legend"></div>
+                </div>
+
+                <div class="overflow-x-auto mt-4">
+                    <table id="ispResultsTable" class="isp-results-table">
+                        <thead id="ispTableHead"></thead>
+                        <tbody id="ispTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <!-- ===== END ISP Block Allocation ===== -->
+
+        </div>
+    
+    <div id="devModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👨‍💻 Developed By</h2>
+                <button class="modal-close-btn" data-modal-id="devModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>This "Interactive IPv4 Analyzer" was built as a B.Tech 2nd Year project for the Computer Networks (BCSE204L) course.</p>
+                
+                <h3 class="text-xl font-semibold mt-6 mb-4">Team Members</h3>
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex items-center gap-4">
+                        <img src="./reyansh.png" alt="Profile Photo" class="w-24 h-24 rounded-full object-cover" />
+                        <div>
+                            <h4 class="text-lg font-bold">Reyansh Kumar</h4>
+                            <p class="text-gray-700">Registration: 24BYB1146</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <img src="./arpit.png" alt="Profile Photo" class="w-24 h-24 rounded-full object-cover" />
+                        <div>
+                            <h4 class="text-lg font-bold">Arpit Shah</h4>
+                            <p class="text-gray-700">Registration: 24BYB1149</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <img src="./ankit.png" alt="Profile Photo" class="w-24 h-24 rounded-full object-cover" />
+                        <div>
+                            <h4 class="text-lg font-bold">Ankit Kumar Singh</h4>
+                            <p class="text-gray-700">Registration: 24BYB1140</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="text-xl font-semibold mt-8 mb-4">Guided By</h3>
+                <div class="flex items-center gap-4">
+                    <img src="./sir.jpg" alt="Profile Photo" class="w-24 h-24 rounded-full object-cover" />
+                    <div>
+                      <h4 class="text-lg font-bold">Dr. Swaminathan Annadurai</h4>
+                      <p class="text-gray-700">Project Guide</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>❓ Help & How-To-Use</h2>
+                <button class="modal-close-btn" data-modal-id="helpModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>How to Use This Tool</h3>
+                <ol>
+                    <li>
+                        <strong>Enter an IP:</strong> In the "IP Address" box, type any valid IPv4 address (e.g., <code>192.168.1.1</code>).
+                    </li>
+                    <li>
+                        <strong>Enter a Mask (Optional):</strong> In the "Subnet Mask" box, you can add a mask in two ways:
+                        <ul>
+                            <li><strong>Prefix:</strong> <code>/24</code> (This is the easiest!)</li>
+                            <li><strong>Dotted-Decimal:</strong> <code>255.255.255.0</code></li>
+                        </ul>
+                        <p>If you leave this blank, the tool will just show you the IP's <strong>default Classful</strong> info.</p>
+                    </li>
+                    <li>
+                        <strong>Analyze:</strong> Click the "Analyze IP" button to see the magic. This will fill out all the result sections.
+                    </li>
+                     <li>
+                        <strong>Toggle Binary:</strong> Check the "Toggle Binary Mode" box to see the binary (0s and 1s) version of the addresses. This is great for understanding the bit-level logic.
+                    </li>
+                    <li>
+                        **Analyze Division:** Use the "Network Division" tool to plan subnets. This tool uses the same IP and Mask from Section 1.
+                    </li>
+                </ol>
+                
+                <h3 class="mt-6">Button Functions</h3>
+                 <ul>
+                    <li><strong>Quick Test IPs:</strong> Use these buttons to instantly load demo IPs for your TAs.</li>
+                    <li><strong>Learn:</strong> Opens a modal with the key "Module 4" concepts this project is based on (e.g., Classful vs. Classless, Subnetting).</li>
+                    <li><strong>Help:</strong> You are here!</li>
+                    <li><strong>Developed By:</strong> Shows the team info.</li>
+                    <li><strong>Explain with AI:</strong> After you get a result, click this to ask the Gemini AI to explain your specific results in simple terms.</li>
+                    <li><strong>Download Report:</strong> Creates a clean, printable report of the results (without the buttons) for your lab submission.</li>
+                </ul>
+
+                <h3 class="mt-6">How to Interpret the Results</h3>
+                <h4>1. What is Processed</h4>
+                <p>When you click "Analyze," the tool does the following:</p>
+                <ul>
+                    <li>Converts your IP and Mask into 32-bit binary numbers.</li>
+                    <li>Performs a bitwise <code>AND</code> operation (<code>IP & MASK</code>) to find the <strong>Network ID</strong>.</li>
+                    <li>Performs a bitwise <code>OR</code> operation (<code>Network ID | (~MASK)</code>) to find the <strong>Broadcast Address</strong>.</li>
+                    <li>Counts the number of "0"s in the mask to find the host bits (let's call it 'h') and calculates usable hosts with <code>2<sup>h</sup> - 2</code>.</li>
+                </ul>
+                
+                <h4>2. Understanding the Visuals (Graphs)</h4>
+                 <ul>
+                    <li><strong>Total IP Space Bar:</strong> This bar depicts the *entire* IPv4 address space (all 256 possible first numbers, 0-255). It's color-coded by Class (A, B, C, etc.). The "You" marker shows where *your* IP's first number fits into the big picture.</li>
+                    <li><strong>Network vs. Host Bits Bar:</strong> This bar depicts the 32 bits of your IP. The blue part shows the "Network" bits (defined by your mask), and the orange part shows the "Host" bits. A longer blue bar means fewer hosts.</li>
+                </ul>
+                
+                <h4>3. Understanding the Address Details</h4>
+                <ul>
+                    <li><strong>Address Class:</strong> The default Class (A, B, C) based *only* on the first number.</li>
+                    <li><strong>Active Subnet Mask:</strong> The mask *actually used* for the calculation (either your custom one or the class default).</li>
+                    <li><strong>Network ID:</strong> The "first" address in the subnet. Represents the network itself (like a street name).</li>
+                    <li><strong>Broadcast Address:</strong> The "last" address. Used to send messages to all devices on the network.</li>
+                    <li><strong>Total Usable Hosts:</strong> The number of devices you can actually use, which is <code>(2<sup>host_bits</sup>) - 2</code>. We subtract 2 for the Network and Broadcast addresses.</li>
+                    <li><strong>Usable Host Range:</strong> The first and last IPs you can assign to a computer.</li>
+                </ul>
+                
+                <h4>4. Subnet Comparison Box</h4>
+                <p>This box *only* appears if you enter a <strong>custom mask</strong> that is *different* from the IP's default class mask (e.g., a Class B IP like <code>150.100.1.1</code> with a <code>/24</code> mask). It shows you how "subnetting" works by comparing the default network to the new, smaller networks you created.</p>
+                
+            </div>
+        </div>
+    </div>
+    
+    <div id="learnModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎓 Learn: Core Networking Concepts</h2>
+                <button class="modal-close-btn" data-modal-id="learnModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Core IPv4 Addressing Concepts</h3>
+                <p>This project demonstrates the key concepts of IPv4 addressing, from the original "Classful" system to modern "Classless" subnetting (CIDR and VLSM).</p>
+                
+                <h4>1. Classful Addressing (The Old Way)</h4>
+                <p>The original internet (RFC 791) was divided into fixed "Classes" based on the first octet (the first number) of the IP address. This was simple but very wasteful.</p>
+                <ul>
+                    <li><strong>Class A (1-126):</strong> Default Mask <code>/8</code> (255.0.0.0). For 126 massive networks with ~16.7 million hosts each.</li>
+                    <li><strong>Class B (128-191):</strong> Default Mask <code>/16</code> (255.255.0.0). For ~16,000 medium networks with ~65,000 hosts each.</li>
+                    <li><strong>Class C (192-223):</strong> Default Mask <code>/24</code> (255.255.255.0). For ~2 million small networks with 254 hosts each.</li>
+                    <li><strong>Class D (224-239):</strong> Reserved for Multicasting (streaming to a group).</li>
+                    <li><strong>Class E (240-255):</strong> Reserved for Experimental use.</li>
+                </ul>
+                <p><strong>Wastfulness Example:</strong> If you needed 300 IP addresses, a Class C (254 hosts) was too small, so you had to get a Class B (65,534 hosts), wasting over 65,000 addresses.</p>
+
+                <h4>2. Subnetting & CIDR (The New Way)</h4>
+                <p><strong>Subnetting</strong> was invented to fix this waste. It allows you to take one large block (like a Class B) and "sub-divide" it into many smaller networks. This is done by "borrowing" bits from the host part of the address to create more network parts.</p>
+                <p><strong>Classless Inter-Domain Routing (CIDR)</strong> (RFC 1519) is the modern standard. It completely ignores the old "Classes" and just uses a prefix (like <code>/26</code>) to define the subnet mask. This gives total flexibility to create networks of *any* size, which is what this tool's "Network Division" feature demonstrates.</p>
+                
+                <h4>3. VLSM (Variable Length Subnet Masking)</h4>
+                <p>VLSM is the next step in efficiency. Instead of dividing a network into 8 *equal* subnets, VLSM allows you to divide it into subnets of *different sizes* based on need. This is the core logic of the "Divide Unequally" feature in this tool.</p>
+                <p>The key is to always allocate the **largest** required networks first. By sorting the needs from largest to smallest, you avoid fragmenting your IP space, ensuring there's a continuous block available for the next-largest network.</p>
+
+                <h4>4. Special Address Types</h4>
+                <p>Not all IPs are created equal. This tool identifies several special types:</p>
+                <ul>
+                    <li><strong>Network ID:</strong> The very first address in a subnet (all host bits are '0'). It represents the network itself (like a street name) and cannot be assigned to a device.</li>
+                    <li><strong>Broadcast Address:</strong> The very last address in a subnet (all host bits are '1'). Data sent here goes to <em>all</em> devices on that network. It also cannot be assigned.</li>
+                    <li><strong>Usable Hosts:</strong> All the addresses <em>between</em> the Network ID and the Broadcast Address. This is why we calculate <code>(2<sup>host_bits</sup>) - 2</code>.</li>
+                    <li><strong>Loopback (127.x.x.x):</strong> Refers to your own computer (<code>localhost</code>).</li>
+                    <li><strong>Private (RFC 1918):</strong> Blocks like <code>10.x.x.x</code>, <code>172.16-31.x.x</code>, and <code>192.168.x.x</code> are reserved for internal networks (like your home Wi-Fi) and are not routable on the public internet.</li>
+                    <li><strong>APIPA (169.254.x.x):</strong> An "Automatic Private IP Address" your computer gives itself if it can't find a DCHP server (your router) to get a real IP.</li>
+                </ul>
+
+                <h3 class="mt-6">🎬 Recommended Videos</h3>
+                <p>Sometimes seeing it explained is best. Check out these videos (you can add your own links here!):</p>
+                <style>
+                    .video-link {
+                        display: block;
+                        padding: 10px 15px;
+                        background: #f9f9f9;
+                        border: 1px solid #eee;
+                        border-radius: 4px;
+                        margin-bottom: 8px;
+                        color: #007bff;
+                        font-weight: 500;
+                        text-decoration: none;
+                        transition: background 0.2s;
+                    }
+                    .video-link:hover {
+                        background: #f0f0f0;
+                        text-decoration: underline;
+                    }
+                    .video-link strong {
+                        display: block;
+                        color: #333;
+                    }
+                </style>
+                <div>
+                    <a href="https://www.youtube.com/watch?v=s_Ntt6eTn94" target="_blank" class="video-link">
+                        <strong>Video 1: IP Addresses and Subnetting (PowerCert)</strong>
+                        A fast, animated, and popular introduction to the basics.
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=ecCuyq-WprM" target="_blank" class="video-link">
+                        <strong>Video 2: VLSM Subnetting Explained (Practical Networking)</strong>
+                        A clear, step-by-step walkthrough of the "Divide Unequally" logic.
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=t5xYI0kx2go" target="_blank" class="video-link">
+                        <strong>Video 3: CIDR vs. Classful Addressing</strong>
+                        A clear comparison of the old way vs. the new way.
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=6-02DOs_Ggc" target="_blank" class="video-link">
+                        <strong>Video 4: Private vs. Public IP Addresses</strong>
+                        Explains the "Special Types" (RFC 1918) in detail.
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=rs39-bEJAow" target="_blank" class="video-link">
+                        <strong>Video 5: Binary to Decimal Conversion</strong>
+                        A core skill needed to understand how the 0s and 1s turn into numbers.
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=u-22v1b1r4g" target="_blank" class="video-link">
+                        <strong>Video 6: The "Magic Number" Subnetting Trick</strong>
+                        A popular shortcut for calculating subnets quickly by hand.
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=ZxAw0o-iGJA" target="_blank" class="video-link">
+                        <strong>Video 7: What is a Subnet Mask? (NetworkChuck)</strong>
+                        An energetic and easy-to-understand explanation.
+                    </a>
+                    <a href="https://www.youtube.com/watch?v=O-b8P6ltmD8" target="_blank" class="video-link">
+                        <strong>Video 8: What is a Broadcast Address?</strong>
+                        A short, focused video on this important special address.
+                    </a>
+                </div>
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // console.log("Script init...");
+        
+        // --- Get all DOM elements ---
+        // Inputs
+        const ipInput = document.getElementById('ipInput');
+        const maskInput = document.getElementById('maskInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        // NEW
+        const binaryToggle = document.getElementById('binaryToggle');
+        
+        // Panels
+        const errorPanel = document.getElementById('errorPanel');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultsPanel = document.getElementById('resultsPanel');
+        const printHeader = document.getElementById('printHeader'); // REMOVED, but var exists
+        
+        // Results - Main
+        const resClass = document.getElementById('res-class');
+        const resIpType = document.getElementById('res-ip-type');
+        const resMask = document.getElementById('res-mask');
+        const resNetwork = document.getElementById('res-network');
+        const resBroadcast = document.getElementById('res-broadcast');
+        const resHostRange = document.getElementById('res-host-range');
+        const resHosts = document.getElementById('res-hosts');
+        const resReason = document.getElementById('res-reason');
+        const resPrefix = document.getElementById('res-prefix');
+        
+        // Results - Comparison
+        const subnetComparison = document.getElementById('subnetComparison');
+        const compClassHosts = document.getElementById('comp-class-hosts');
+        const compSubnets = document.getElementById('comp-subnets');
+        const compBorrowedBits = document.getElementById('comp-borrowed-bits');
+        const compReason = document.getElementById('comp-reason');
+        
+        // Results - Visuals
+        const vizBar = document.getElementById('visualizationBar');
+        const ipSpaceLegend = document.getElementById('ipSpaceLegend');
+        const netHostBar = document.getElementById('netHostBar');
+        
+        // Results - Binary
+        const binaryView = document.getElementById('binaryView');
+        const resBinaryIp = document.getElementById('res-binary-ip');
+        const resBinaryMask = document.getElementById('res-binary-mask');
+        const resBinaryNet = document.getElementById('res-binary-net');
+        const resBinaryBcast = document.getElementById('res-binary-bcast');
+        
+        // Sample IPs
+        const sampleIpButtons = document.querySelectorAll('.sample-ip');
+        
+        // Global state
+        let currentAnalysis = null;
+        
+        // --- Top Nav Buttons ---
+        const learnBtn = document.getElementById('learnBtn');
+        const helpBtn = document.getElementById('helpBtn');
+        const devBtn = document.getElementById('devBtn');
+        
+        // --- NEW Modals ---
+        const devModal = document.getElementById('devModal');
+        const helpModal = document.getElementById('helpModal');
+        const learnModal = document.getElementById('learnModal');
+        const allModals = document.querySelectorAll('.modal');
+        const allModalCloseBtns = document.querySelectorAll('.modal-close-btn');
+        
+        // --- AI Button & Panel ---
+        const explainBtn = document.getElementById('explainBtn');
+        const geminiExplainPanel = document.getElementById('geminiExplainPanel');
+        const geminiExplainContent = document.getElementById('geminiExplainContent');
+        
+        // --- Print Button ---
+        const printBtn = document.getElementById('printBtn');
+
+        // --- NEW FEATURE: Network Division & Subnet Allocation ---
+        // Note: divIpInput and divMaskInput are removed, will use main ipInput and maskInput
+        const divMethodEqual = document.getElementById('divMethodEqual');
+        const divMethodUnequal = document.getElementById('divMethodUnequal');
+        const divEqualPanel = document.getElementById('divEqualPanel');
+        const divUnequalPanel = document.getElementById('divUnequalPanel');
+        const divEqualNetworks = document.getElementById('divEqualNetworks');
+        const divUnequalNetworks = document.getElementById('divUnequalNetworks');
+        const divUnequalHostInputs = document.getElementById('divUnequalHostInputs');
+        const divResetBtn = document.getElementById('divResetBtn');
+        const divAnalyzeBtn = document.getElementById('divAnalyzeBtn');
+        const divErrorPanel = document.getElementById('divErrorPanel');
+        const divErrorMessage = document.getElementById('divErrorMessage');
+        const divResultsPanel = document.getElementById('divResultsPanel');
+        const divTableHead = document.getElementById('divTableHead');
+        const divTableBody = document.getElementById('divTableBody');
+        const divExplainBtn = document.getElementById('divExplainBtn');
+        const divGeminiExplainPanel = document.getElementById('divGeminiExplainPanel');
+        const divGeminiExplainContent = document.getElementById('divGeminiExplainContent');
+        // --- NEW: Customer Division Elements ---
+        const divMethodCustomer = document.getElementById('divMethodCustomer');
+        const divCustomerPanel = document.getElementById('divCustomerPanel');
+        const divCustomerCount = document.getElementById('divCustomerCount');
+        const divCustomerHostInputs = document.getElementById('divCustomerHostInputs');
+        // --- END NEW FEATURE ---
+        
+        // --- Event Listeners ---
+        analyzeBtn.addEventListener('click', handleAnalysis);
+        binaryToggle.addEventListener('change', handleAnalysis); // Re-run analysis to show/hide binary
+        
+        // NEW Listeners
+        resetBtn.addEventListener('click', resetApp);
+        printBtn.addEventListener('click', generatePrintReport); // UPDATED this line
+        explainBtn.addEventListener('click', getAIExplanation);
+        
+        // Allow 'Enter' key
+        ipInput.addEventListener('keyup', (e) => e.key === 'Enter' && handleAnalysis());
+        maskInput.addEventListener('keyup', (e) => e.key === 'Enter' && handleAnalysis());
+        
+        // Sample buttons
+        sampleIpButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                ipInput.value = btn.dataset.ip;
+                maskInput.value = btn.dataset.mask;
+                handleAnalysis();
+            });
+        });
+        
+        // --- MODAL LISTENERS (FIXED) ---
+        learnBtn.addEventListener('click', () => showModal(learnModal));
+        helpBtn.addEventListener('click', () => showModal(helpModal));
+        devBtn.addEventListener('click', () => showModal(devModal));
+
+        allModalCloseBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                hideModal(btn.closest('.modal'));
+            });
+        });
+
+        allModals.forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    hideModal(modal);
+                }
+            });
+        });
+        
+        function showModal(modal) {
+            modal.classList.remove('hidden');
+        }
+        
+        function hideModal(modal) {
+            modal.classList.add('hidden');
+        }
+        // --- End Modal Logic ---
+
+        // --- NEW FEATURE: Network Division & Subnet Allocation ---
+        divMethodEqual.addEventListener('change', toggleDivisionMethod);
+        divMethodUnequal.addEventListener('change', toggleDivisionMethod);
+        divUnequalNetworks.addEventListener('input', generateHostInputs);
+        divResetBtn.addEventListener('click', resetDivision);
+        divAnalyzeBtn.addEventListener('click', handleSubnetAnalysis);
+        divExplainBtn.addEventListener('click', getAISubnetExplanation);
+        // --- NEW: Customer Division Listeners ---
+        divMethodCustomer.addEventListener('change', toggleDivisionMethod);
+        divCustomerCount.addEventListener('input', generateCustomerInputs);
+        // --- END NEW FEATURE ---
+        
+        
+        // --- App Logic ---
+        function resetApp() {
+            ipInput.value = '';
+            maskInput.value = '';
+            resultsPanel.style.display = 'none';
+            resultsPanel.classList.remove('animate-fade-in'); // --- UI/UX Animation ---
+            errorPanel.style.display = 'none';
+            binaryView.style.display = 'none';
+            binaryToggle.checked = false;
+            geminiExplainPanel.style.display = 'none';
+            geminiExplainContent.innerHTML = '';
+            currentAnalysis = null;
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorPanel.style.display = 'block';
+            resultsPanel.style.display = 'none';
+        }
+
+        function handleAnalysis() {
+            hideModal(learnModal);
+            hideModal(helpModal);
+            hideModal(devModal);
+            geminiExplainPanel.style.display = 'none';
+            geminiExplainContent.innerHTML = '';
+            
+            const ipStr = ipInput.value.trim();
+            const maskStr = maskInput.value.trim();
+            
+            const octets = validateIP(ipStr);
+            if (!octets) {
+                showError("Invalid IP Address. Please use the format X.X.X.X where X is 0-255.");
+                return;
+            }
+            
+            let mask = null;
+            if (maskStr) {
+                mask = validateMask(maskStr);
+                if (!mask) {
+                    showError("Invalid Subnet Mask. Use /prefix (e.g., /24) or dotted-decimal (e.g., 255.255.255.0).");
+                    return;
+                }
+            }
+            
+            // --- Success ---
+            errorPanel.style.display = 'none';
+            resultsPanel.style.display = 'block';
+            resultsPanel.classList.add('animate-fade-in'); // --- UI/UX Animation ---
+            
+            // Core analysis
+            const analysis = getIpAnalysis(octets, mask);
+            currentAnalysis = analysis; // Save for AI + Print
+            
+            // Update DOM
+            updateDOM(analysis, octets);
+            
+            // Update Visuals
+            updateVisualizationBar(octets[0]);
+            updateNetHostBar(analysis.netBits);
+            
+            // Update Binary
+            binaryView.style.display = binaryToggle.checked ? 'block' : 'none';
+            if (binaryToggle.checked) {
+                updateBinaryView(analysis);
+            }
+        }
+        
+        // --- Validation & Conversion Helpers ---
+        function validateIP(ip) {
+            // Regex to check for 0-255
+            const octetRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            const parts = ip.split('.');
+            if (parts.length !== 4) return null;
+            
+            if (parts.every(part => octetRegex.test(part) && part.length > 0)) {
+                return parts.map(Number);
+            }
+            return null;
+        }
+
+        function validateMask(maskStr) {
+            if (!maskStr) return null; // It's optional, so this is fine
+            
+            // Format 1: /24
+            if (maskStr.startsWith('/')) {
+                const prefix = parseInt(maskStr.substring(1));
+                if (isNaN(prefix) || prefix < 0 || prefix > 32) {
+                    return null; // Invalid prefix
+                }
+                return prefixToMask(prefix);
+            }
+            
+            // Format 2: 255.255.255.0
+            const maskOctets = validateIP(maskStr);
+            if (!maskOctets) return null; // Not a valid IP format
+            
+            // Check if it's a valid mask (all 1s, then all 0s)
+            const maskLong = ipToLong(maskOctets);
+            const maskBinary = (maskLong >>> 0).toString(2).padStart(32, '0');
+            
+            if (maskBinary.indexOf('0') > -1 && maskBinary.indexOf('1', maskBinary.indexOf('0')) > -1) {
+                return null; // Invalid, has 1s after 0s (e.g., 255.255.0.255)
+            }
+            
+            // Valid, now find prefix
+            const prefix = maskBinary.split('1').length - 1;
+            
+            return {
+                maskOctets: maskOctets,
+                maskLong: maskLong,
+                prefix: prefix
+            };
+        }
+        
+        function prefixToMask(prefix) {
+            if (prefix === 0) {
+                return { maskOctets: [0,0,0,0], maskLong: 0, prefix: 0 };
+            }
+            // Create a 32-bit integer with 'prefix' ones
+            // (0xFFFFFFFF is 32 ones). Shift left by (32 - prefix)
+            // This creates the correct *inverted* mask (e.g., /24 -> 00...0011...11)
+            // Then we shift it back, but JS handles 32-bit shifts weirdly.
+            // A safer way:
+            let maskLong = (0xFFFFFFFF << (32 - prefix)) >>> 0;
+            
+            return {
+                maskOctets: longToIp(maskLong),
+                maskLong: maskLong,
+                prefix: prefix
+            };
+        }
+        
+        function ipToLong(octets) {
+            // Use bitwise OR and left-shift to build the 32-bit integer
+            // (a << 24) | (b << 16) | (c << 8) | d
+            // >>> 0 ensures the result is an unsigned 32-bit integer
+            return ((octets[0] << 24) | (octets[1] << 16) | (octets[2] << 8) | octets[3]) >>> 0;
+        }
+        
+        function longToIp(long) {
+            // Use bitwise AND and right-shift to extract octets
+            return [
+                (long >>> 24) & 0xFF,
+                (long >>> 16) & 0xFF,
+                (long >>> 8) & 0xFF,
+                long & 0xFF
+            ];
+        }
+        
+        function longToBinary(long) {
+            const bin = (long >>> 0).toString(2).padStart(32, '0');
+            // Insert dots
+            return bin.substring(0, 8) + '.' +
+                   bin.substring(8, 16) + '.' +
+                   bin.substring(16, 24) + '.' +
+                   bin.substring(24, 32);
+        }
+        
+        // --- Core Analysis Function ---
+        function getIpType(octets, ipLong) {
+            const first = octets[0];
+            
+            if (first === 127) return 'Loopback';
+            if (first === 0) return 'Special (0.0.0.0)';
+            if (first === 169 && octets[1] === 254) return 'APIPA';
+            
+            // RFC 1918 Private Ranges
+            if (first === 10) return 'Private';
+            if (first === 172 && (octets[1] >= 16 && octets[1] <= 31)) {
+                return 'Private';
+            }
+            if (first === 192 && octets[1] === 168) {
+                return 'Private';
+            }
+            
+            return 'Public';
+        }
+        
+        function getIpAnalysis(octets, customMask) {
+            const first = octets[0];
+            const ipLong = ipToLong(octets);
+            
+            let analysis = {
+                ipLong: ipLong,
+                ipType: getIpType(octets, ipLong)
+            };
+            
+            // 1. Determine Class
+            let classfulDefaultMask;
+            if (first >= 1 && first <= 126) {
+                analysis.class = 'A';
+                analysis.name = 'Class A';
+                analysis.color = 'bg-green-500';
+                classfulDefaultMask = prefixToMask(8);
+            } else if (first === 127) {
+                analysis.class = 'A';
+                analysis.name = 'Class A (Loopback)';
+                analysis.color = 'bg-gray-400';
+            } else if (first >= 128 && first <= 191) {
+                analysis.class = 'B';
+                analysis.name = 'Class B';
+                analysis.color = 'bg-blue-500';
+                classfulDefaultMask = prefixToMask(16);
+            } else if (first >= 192 && first <= 223) {
+                analysis.class = 'C';
+                analysis.name = 'Class C';
+                analysis.color = 'bg-orange-500';
+                classfulDefaultMask = prefixToMask(24);
+            } else if (first >= 224 && first <= 239) {
+                analysis.class = 'D';
+                analysis.name = 'Class D (Multicast)';
+                analysis.color = 'bg-purple-500';
+            } else if (first >= 240 && first <= 255) {
+                analysis.class = 'E';
+                analysis.name = 'Class E (Experimental)';
+                analysis.color = 'bg-gray-600';
+            } else {
+                analysis.class = 'Special';
+                analysis.name = 'Special (Reserved)';
+                analysis.color = 'bg-gray-400';
+            }
+            
+            // 2. Handle non-calculable classes
+            if (['D', 'E', 'Special'].includes(analysis.class) || analysis.ipType === 'Loopback') {
+                analysis.mask = 'N/A';
+                analysis.maskLong = 0;
+                analysis.netId = 'N/A';
+                analysis.broadcast = 'N/A';
+                analysis.firstHost = 'N/A';
+                analysis.lastHost = '';
+                analysis.totalHosts = '0';
+                analysis.netBits = 0;
+                analysis.hostBits = 0;
+                analysis.prefix = 0;
+                analysis.reason = `This is a ${analysis.name} address. These addresses are not assigned to hosts and do not have subnet masks, network IDs, or broadcast addresses in the typical sense.`;
+                analysis.showComparison = false;
+                return analysis;
+            }
+            
+            // 3. Determine Final Mask
+            let finalMask, reason;
+            analysis.showComparison = false;
+            
+            if (customMask) {
+                finalMask = customMask;
+                if (customMask.prefix === classfulDefaultMask.prefix) {
+                    reason = `A custom mask of ${customMask.maskOctets.join('.')} (${customMask.prefix}) was provided, which matches the default mask for ${analysis.name}.`;
+                } else if (customMask.prefix > classfulDefaultMask.prefix) {
+                    // Subnetting
+                    reason = `This is a <strong>subnetted</strong> ${analysis.name} network. The default /${classfulDefaultMask.prefix} mask was replaced by a custom /${customMask.prefix} mask.`;
+                    analysis.showComparison = true;
+                } else {
+                    // Supernetting
+                    reason = `This is a <strong>supernetted</strong> ${analysis.name} network. The custom /${customMask.prefix} mask is *larger* than the default /${classfulDefaultMask.prefix} mask.`;
+                    analysis.showComparison = false; // Comparison logic is for subnetting
+                }
+            } else {
+                finalMask = classfulDefaultMask;
+                reason = `No custom mask was provided, so the <strong>default Classful mask</strong> (${finalMask.maskOctets.join('.')} or /${finalMask.prefix}) for ${analysis.name} is being used.`;
+            }
+            
+            // 4. Subnet Comparison (if applicable)
+            if (analysis.showComparison) {
+                const classHostBits = 32 - classfulDefaultMask.prefix;
+                analysis.classfulHosts = (BigInt(2) ** BigInt(classHostBits)) - BigInt(2);
+                
+                analysis.borrowedBits = customMask.prefix - classfulDefaultMask.prefix;
+                analysis.numSubnets = BigInt(2) ** BigInt(analysis.borrowedBits);
+            }
+            
+            // 5. Calculations
+            analysis.mask = finalMask.maskOctets.join('.');
+            analysis.maskLong = finalMask.maskLong;
+            analysis.prefix = finalMask.prefix;
+            analysis.netBits = finalMask.prefix;
+            analysis.hostBits = 32 - finalMask.prefix;
+            analysis.reason = reason;
+
+            // Handle /31 and /32
+            if (analysis.hostBits < 2) {
+                analysis.netIdLong = (ipLong & finalMask.maskLong) >>> 0;
+                analysis.netId = longToIp(analysis.netIdLong);
+                
+                if (analysis.hostBits === 1) { // /31
+                    analysis.broadcastLong = (analysis.netIdLong | (~finalMask.maskLong)) >>> 0;
+                    analysis.broadcast = longToIp(analysis.broadcastLong);
+                    analysis.firstHost = 'N/A (Point-to-Point)';
+                    analysis.lastHost = '';
+                    analysis.totalHosts = '0 (Used for point-to-point links)';
+                } else { // /32
+                    analysis.broadcastLong = analysis.ipLong;
+                    analysis.broadcast = 'N/A';
+                    analysis.netId = octets.join('.'); // Host route
+                    analysis.firstHost = 'N/A (Host Route)';
+                    analysis.lastHost = '';
+                    analysis.totalHosts = '1 (This host only)';
+                }
+            } else {
+                // Standard calculation
+                analysis.netIdLong = (ipLong & finalMask.maskLong) >>> 0;
+                analysis.netId = longToIp(analysis.netIdLong);
+                
+                analysis.broadcastLong = (analysis.netIdLong | (~finalMask.maskLong)) >>> 0;
+                analysis.broadcast = longToIp(analysis.broadcastLong);
+                
+                analysis.firstHost = longToIp(analysis.netIdLong + 1);
+                analysis.lastHost = longToIp(analysis.broadcastLong - 1);
+                
+                // Use BigInt for 2^N - 2 to avoid overflow on large subnets
+                const hostBitsBig = BigInt(analysis.hostBits);
+                analysis.totalHosts = (BigInt(2) ** hostBitsBig) - BigInt(2);
+                analysis.totalHosts = analysis.totalHosts.toLocaleString();
+            }
+            
+            return analysis;
+        }
+
+        // --- DOM Update Functions ---
+        function updateDOM(analysis, octets) {
+            // Main analysis
+            resClass.textContent = analysis.name;
+            resIpType.textContent = (analysis.ipType === 'Public' && !['D','E'].includes(analysis.class)) ? 'Public (Routable)' : analysis.ipType;
+            resMask.textContent = `${analysis.mask} (/${analysis.prefix})`;
+            resNetwork.textContent = analysis.netId.join ? analysis.netId.join('.') : analysis.netId;
+            resBroadcast.textContent = analysis.broadcast.join ? analysis.broadcast.join('.') : analysis.broadcast;
+            resHostRange.textContent = (analysis.firstHost.join && analysis.lastHost.join) ? `${analysis.firstHost.join('.')}  —  ${analysis.lastHost.join('.')}` : analysis.firstHost;
+            resHosts.textContent = analysis.totalHosts;
+            resReason.innerHTML = analysis.reason;
+            resPrefix.textContent = analysis.prefix;
+
+            // Comparison box
+            if (analysis.showComparison) {
+                compClassHosts.textContent = analysis.classfulHosts.toLocaleString();
+                compSubnets.textContent = analysis.numSubnets.toLocaleString();
+                compBorrowedBits.textContent = analysis.borrowedBits;
+                
+                const customHostCount = (analysis.hostBits < 2) ? 0 : (BigInt(1) << BigInt(analysis.hostBits)) - BigInt(2);
+                
+                compReason.innerHTML = `By borrowing <strong>${analysis.borrowedBits} bit(s)</strong>, you split the default Class ${analysis.class} network into <strong>${analysis.numSubnets.toLocaleString()}</strong> smaller subnets, each with <strong>${customHostCount.toLocaleString()}</strong> usable hosts.`;
+                subnetComparison.style.display = 'block';
+            } else {
+                subnetComparison.style.display = 'none';
+            }
+        }
+        
+        // --- Visualization Functions ---
+        const ipSpaceBlocks = [
+            { name: 'Reserved', start: 0, size: 1, color: 'bg-gray-400', tooltip: '<strong>Reserved (0.x.x.x)</strong><br>Reserved for special use (e.g., "this network").' },
+            { name: 'Class A', start: 1, size: 126, color: 'bg-green-500', tooltip: '<strong>Class A (1-126)</strong><br>Used for very large networks. Includes Private (10.x.x.x).' },
+            { name: 'Loopback', start: 127, size: 1, color: 'bg-gray-400', tooltip: '<strong>Loopback (127.x.x.x)</strong><br>Reserved for loopback (testing your own machine).' },
+            { name: 'Class B', start: 128, size: 64, color: 'bg-blue-500', tooltip: '<strong>Class B (128-191)</strong><br>Used for medium-to-large networks. Includes Private (172.16-31.x.x) and APIPA (169.254.x.x).' },
+            { name: 'Class C', start: 192, size: 32, color: 'bg-orange-500', tooltip: '<strong>Class C (192-223)</strong><br>Used for small networks. Includes Private (192.168.x.x).' },
+            { name: 'Class D', start: 224, size: 16, color: 'bg-purple-500', tooltip: '<strong>Class D (224-239)</strong><br>Reserved for Multicast traffic.' },
+            { name: 'Class E', start: 240, size: 16, color: 'bg-gray-600', tooltip: '<strong>Class E (240-255)</strong><br>Reserved for Experimental use.' }
+        ];
+
+        function updateVisualizationBar(firstOctet) {
+            vizBar.innerHTML = '';
+            ipSpaceLegend.innerHTML = '';
+            
+            ipSpaceBlocks.forEach(block => {
+                const blockEl = document.createElement('div');
+                const widthPercent = (block.size / 256) * 100;
+                blockEl.className = `block ${block.color}`;
+                blockEl.style.width = `${widthPercent}%`;
+                
+                // Add tooltip
+                blockEl.innerHTML = `<span class="tooltip">${block.tooltip}</span>`;
+                
+                // Check if the current IP is in this block
+                if (firstOctet >= block.start && firstOctet < (block.start + block.size)) {
+                    const markerPercentage = ((firstOctet - block.start) / block.size) * 100;
+                    // Add the "You are here" marker
+                    blockEl.innerHTML += `
+                        <div class="ip-marker" style="left: ${markerPercentage}%"></div>
+                        <div class="ip-marker-label" style="left: ${markerPercentage}%">You</div>
+                    `;
+                }
+                
+                vizBar.appendChild(blockEl);
+                
+                // Add to legend
+                ipSpaceLegend.innerHTML += `
+                    <div class="flex items-center">
+                        <span class="w-3 h-3 rounded-full ${block.color} mr-1.5"></span>
+                        <span>${block.name}</span>
+                    </div>
+                `;
+            });
+        }
+        
+        // --- UI/UX Animation (Updated Function) ---
+        function updateNetHostBar(netBits) {
+            netHostBar.innerHTML = ''; // Clear it
+            
+            let netPercent = 0;
+            let hostPercent = 0;
+            let netTooltip = '';
+            let hostTooltip = '';
+
+            if (netBits === 0) {
+                hostPercent = 100;
+                hostTooltip = '<strong>Host Bits (32)</strong><br>All 32 bits are available for hosts.';
+            } else if (netBits === 32) {
+                netPercent = 100;
+                netTooltip = '<strong>Network Bits (32)</strong><br>All 32 bits define the network (a host route).';
+            } else {
+                netPercent = (netBits / 32) * 100;
+                hostPercent = 100 - netPercent;
+                netTooltip = `<strong>Network Bits (${netBits})</strong><br>These bits define the subnet.`;
+                hostTooltip = `<strong>Host Bits (${32-netBits})</strong><br>These bits define the hosts on the network.`;
+            }
+
+            // Set widths to 0% first
+            netHostBar.innerHTML = `
+                <div id="net-bar-block" class="block bg-blue-600" style="width: 0%;" title="${netBits} Network Bits">
+                    <span class="tooltip">${netTooltip}</span>
+                </div>
+                <div id="host-bar-block" class="block bg-orange-500" style="width: 0%;" title="${32-netBits} Host Bits">
+                     <span class="tooltip">${hostTooltip}</span>
+                </div>
+            `;
+
+            // Then, in a tiny delay, set the *real* width to trigger the animation
+            setTimeout(() => {
+                const netBlock = document.getElementById('net-bar-block');
+                const hostBlock = document.getElementById('host-bar-block');
+                if (netBlock) netBlock.style.width = `${netPercent}%`;
+                if (hostBlock) hostBlock.style.width = `${hostPercent}%`;
+            }, 50); // 50ms delay is instant to the eye but lets the browser "catch up"
+        }
+        
+        // --- Binary View Function ---
+        function updateBinaryView(analysis) {
+            if (!analysis.netBits && analysis.netBits !== 0) {
+                // Handle Class D/E
+                resBinaryIp.innerHTML = longToBinary(analysis.ipLong);
+                resBinaryMask.textContent = 'N/A';
+                resBinaryNet.textContent = 'N/A';
+                resBinaryBcast.textContent = 'N/A';
+                return;
+            }
+        
+            const ipBinary = longToBinary(analysis.ipLong);
+            const maskBinary = longToBinary(analysis.maskLong);
+            const netBinary = longToBinary(analysis.netIdLong);
+            const bcastBinary = longToBinary(analysis.broadcastLong);
+            
+            // Need to count dots to get the right split index
+            let netBitsWithDots = analysis.netBits;
+            if (analysis.netBits > 8) netBitsWithDots++;
+            if (analysis.netBits > 16) netBitsWithDots++;
+            if (analysis.netBits > 24) netBitsWithDots++;
+            
+            const formatBinary = (binaryStr) => {
+                if (analysis.netBits === 32) return `<span class="net-part-text">${binaryStr}</span>`;
+                if (analysis.netBits === 0) return `<span class="host-part-text">${binaryStr}</span>`;
+                
+                const netPart = binaryStr.substring(0, netBitsWithDots);
+                const hostPart = binaryStr.substring(netBitsWithDots);
+                return `<span class="net-part-text">${netPart}</span><span class="host-part-text">${hostPart}</span>`;
+            };
+            
+            resBinaryIp.innerHTML = formatBinary(ipBinary);
+            resBinaryMask.innerHTML = formatBinary(maskBinary);
+            resBinaryNet.innerHTML = formatBinary(netBinary);
+            resBinaryBcast.innerHTML = formatBinary(bcastBinary);
+        }
+        
+        // --- PRINT FUNCTION (UPDATED) ---
+        function generatePrintReport() {
+            if (!currentAnalysis) { // Don't print if no main analysis
+                alert("Please analyze an IP first before downloading a report.");
+                return;
+            }
+            const analysis = currentAnalysis;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>IP Analysis Report</title>');
+            printWindow.document.write(`
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                    h1 { text-align: center; color: #007bff; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+                    h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 30px; }
+                    .section { margin-bottom: 20px; page-break-inside: avoid; }
+                    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+                    .grid-item { background: #f9f9f9; border: 1px solid #eee; padding: 15px; border-radius: 4px; }
+                    .grid-item strong { display: block; font-size: 0.9rem; color: #777; margin-bottom: 5px; text-transform: uppercase; }
+                    .grid-item span { font-size: 1.25rem; font-weight: 600; color: #333; word-break: break-all; }
+                    .reason-box { background: #e6f7ff; border-left: 5px solid #007bff; padding: 15px; border-radius: 0 4px 4px 0; margin-top: 20px; font-size: 1.1rem; }
+                    .binary-view { background: #2b2b2b; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; border-radius: 4px; margin-top: 20px; font-size: 1.1rem; line-height: 1.6; overflow-x: auto; white-space: pre; }
+                    .binary-view .label { color: #888; width: 110px; display: inline-block; }
+                    .net-part-text { color: #66d9ef; font-weight: bold; }
+                    .host-part-text { color: #f59e0b; font-weight: bold; }
+                    
+                    /* NEW Print Table Styles */
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 12px; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; word-break: break-all; }
+                    th { background-color: #f2f2f2; }
+                    td.error { color: #D8000C; font-weight: bold; }
+                </style>
+            `);
+            printWindow.document.write('</head><body>');
+            
+            // 1. Title
+            printWindow.document.write('<h1>IP Analysis Report</h1>');
+            
+            // 2. Input
+            printWindow.document.write('<div class="section"><h2>Input Details</h2>');
+            printWindow.document.write(`<p><strong>IP Address:</strong> ${ipInput.value}</p>`);
+            printWindow.document.write(`<p><strong>Subnet Mask:</strong> ${maskInput.value || 'N/A (Used Class Default)'}</p>`);
+            printWindow.document.write('</div>');
+            
+            // 3. Main Results
+            const netIdText = analysis.netId.join ? analysis.netId.join('.') : analysis.netId;
+            const broadcastText = analysis.broadcast.join ? analysis.broadcast.join('.') : analysis.broadcast;
+            const rangeText = (analysis.firstHost.join && analysis.lastHost.join) ? `${analysis.firstHost.join('.')} — ${analysis.lastHost.join('.')}` : analysis.firstHost;
+
+            printWindow.document.write('<div class="section"><h2>Address Details</h2>');
+            printWindow.document.write('<div class="grid">');
+            printWindow.document.write(`<div class="grid-item"><strong>Address Class</strong><span>${analysis.name}</span></div>`);
+            printWindow.document.write(`<div class="grid-item"><strong>Special Type</strong><span>${analysis.ipType}</span></div>`);
+            printWindow.document.write(`<div class="grid-item"><strong>Active Subnet Mask</strong><span>${analysis.mask} (/${analysis.prefix})</span></div>`);
+            printWindow.document.write(`<div class="grid-item"><strong>Network ID</strong><span>${netIdText}</span></div>`);
+            printWindow.document.write(`<div class="grid-item"><strong>Total Usable Hosts</strong><span>${analysis.totalHosts}</span></div>`);
+            printWindow.document.write(`<div class="grid-item"><strong>Usable Host Range</strong><span>${rangeText}</span></div>`);
+            printWindow.document.write(`<div class="grid-item"><strong>Broadcast Address</strong><span>${broadcastText}</span></div>`);
+            printWindow.document.write('</div></div>');
+            
+            // 3. Calculation Explanation
+            printWindow.document.write('<div class="section"><h2>Calculation Summary</h2>');
+            printWindow.document.write(`<div class="reason-box">${analysis.reason}</div>`);
+            printWindow.document.write('</div>');
+            
+            // 4. (Optional) Subnetting Analysis
+            if (analysis.showComparison) {
+                const customHostCount = (analysis.hostBits < 2) ? 0 : (BigInt(1) << BigInt(analysis.hostBits)) - BigInt(2);
+                const comparisonReason = `By borrowing ${analysis.borrowedBits} bit(s), you split the ${analysis.class} network (which had ${analysis.classfulHosts.toLocaleString()} hosts) into ${analysis.numSubnets.toLocaleString()} smaller subnets, each with ${customHostCount.toLocaleString()} usable hosts.`;
+                
+                printWindow.document.write('<div class="section" style="background: #fffbe6; border-left: 5px solid #ffc107; padding: 15px;">');
+                printWindow.document.write('<h2 style="border: none; padding: 0; margin-bottom: 10px;">Subnetting Analysis</h2>');
+                printWindow.document.write('<div class="grid" style="gap: 10px;">');
+                printWindow.document.write(`<div class="grid-item" style="background: #fff;"><strong>Default Class Hosts</strong><span>${analysis.classfulHosts.toLocaleString()}</span></div>`);
+                printWindow.document.write(`<div class="grid-item" style="background: #fff;"><strong>Bits Borrowed</strong><span>${analysis.borrowedBits} bits</span></div>`);
+                printWindow.document.write(`<div class="grid-item" style="background: #fff;"><strong>Total Subnets Created</strong><span>${analysis.numSubnets.toLocaleString()}</span></div>`);
+                printWindow.document.write('</div>');
+                printWindow.document.write(`<div style="font-size: 1.1rem; margin-top: 15px;"><p>${comparisonReason}</p></div>`);
+                printWindow.document.write('</div>');
+            }
+            
+            // 5. (Optional) Add Binary View if
+            if (binaryToggle.checked) {
+                const ipBinary = longToBinary(analysis.ipLong);
+                const maskBinary = longToBinary(analysis.maskLong);
+                const netBinary = longToBinary(analysis.netIdLong);
+                const bcastBinary = longToBinary(analysis.broadcastLong);
+                
+                let netBitsWithDots = analysis.netBits;
+                if (analysis.netBits > 8) netBitsWithDots++;
+                if (analysis.netBits > 16) netBitsWithDots++;
+                if (analysis.netBits > 24) netBitsWithDots++;
+
+                const formatBinary = (binaryStr) => {
+                    if (analysis.netBits === 32) return `<span class="net-part-text">${binaryStr}</span>`;
+                    if (analysis.netBits === 0) return `<span class="host-part-text">${binaryStr}</span>`;
+                    const netPart = binaryStr.substring(0, netBitsWithDots);
+                    const hostPart = binaryStr.substring(netBitsWithDots);
+                    return `<span class="net-part-text">${netPart}</span><span class="host-part-text">${hostPart}</span>`;
+                };
+
+                printWindow.document.write('<div class="section"><h2>Binary View</h2>');
+                printWindow.document.write('<div class="binary-view">');
+                printWindow.document.write(`<div><span class="label">Address:</span> ${formatBinary(ipBinary)}</div>`);
+                printWindow.document.write(`<div><span class="label">Mask:</span> ${formatBinary(maskBinary)}</div>`);
+                printWindow.document.write(`<div><span class="label">Network:</span> ${formatBinary(netBinary)}</div>`);
+                printWindow.document.write(`<div><span class="label">Broadcast:</span> ${formatBinary(bcastBinary)}</div>`);
+                printWindow.document.write('</div></div>');
+            }
+
+            // --- NEW: Add Subnet Division Table if it exists ---
+            if (currentSubnetAnalysis) {
+                printWindow.document.write('<div class="section" style="page-break-before: always;">');
+                printWindow.document.write('<h2>Network Division & Subnet Allocation</h2>');
+                
+                // Get table HTML
+                const tableHead = document.getElementById('divTableHead').innerHTML;
+                const tableBody = document.getElementById('divTableBody').innerHTML;
+                
+                printWindow.document.write('<table>');
+                printWindow.document.write(`<thead>${tableHead}</thead>`);
+                printWindow.document.write(`<tbody>${tableBody}</tbody>`);
+                printWindow.document.write('</table>');
+                
+                // This script will run in the print window to apply error styles
+                printWindow.document.write(`
+                    <script>
+                        document.addEventListener('DOMContentLoaded', () => {
+                            document.querySelectorAll('.text-red-600').forEach(el => {
+                                el.style.color = '#D8000C';
+                                el.style.fontWeight = 'bold';
+                            });
+                        });
+                    <\/script>
+                `);
+                
+                printWindow.document.write('</div>');
+            }
+
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // --- AI Feature Logic ---
+        
+        // 1. Helper to convert simple markdown (like *bold*) to HTML
+        function simpleMarkdownToHtml(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')       // Italics
+                .replace(/`(.*?)`/g, '<code>$1</code>')       // Inline code
+                .replace(/^- (.*)/gm, '<ul><li>$1</li></ul>') // Bullets (simple)
+                .replace(/(\r\n|\r|\n){2,}/g, '<br><br>'); // Paragraphs
+        }
+
+        // 2. A simulated fetch call
+        async function fakeFetchAI(prompt) {
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Default analysis text
+            let analysisText = `You asked me to explain the results for the IP \`${ipInput.value}\` with the mask \`${maskInput.value || 'default'}\`.`;
+
+            if (currentAnalysis) {
+                 analysisText += `
+* **Class:** This is a ${currentAnalysis.name}.
+* **Network ID:** The calculated network is \`${currentAnalysis.netId.join ? currentAnalysis.netId.join('.') : currentAnalysis.netId}\`.
+* **Host Range:** You have \`${currentAnalysis.totalHosts}\` usable hosts.`;
+            }
+
+            // Check if it's a subnet analysis prompt
+            if (prompt.includes("subnetting")) {
+                let method = divMethodEqual.checked ? 'Equal' : (divMethodUnequal.checked ? 'Unequal (VLSM)' : 'Customer');
+                analysisText = `You asked me to explain a **subnetting plan**.
+* **Starting Network:** \`${currentSubnetBase.network} ${currentSubnetBase.mask}\`
+* **Method:** ${method}
+* **Result:** The table shows all the new, smaller networks created from your base network.`;
+            }
+
+            // Return a simulated successful response
+            return {
+                ok: true,
+                json: async () => ({
+                    candidates: [{
+                        content: {
+                            parts: [{
+                                text: `This is a **simulated AI response** based on your request.
+
+${analysisText}
+
+This is a *placeholder* function. You can replace 'fakeFetchAI' with your real Google AI API call logic. The prompt sent to the (fake) API was:
+\`\`\`
+${prompt}
+\`\`\``
+                            }]
+                        }
+                    }]
+                })
+            };
+        }
+
+        // 3. Retry-logic fetch
+        async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
+            try {
+                return await fetch(url, options);
+            } catch (error) {
+                if (retries > 0) {
+                    console.warn(`Fetch failed. Retrying in ${delay}ms... (${retries} retries left)`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                }
+                throw error;
+            }
+        }
+        
+        // 4. Main AI handler
+        async function getAIExplanation() {
+            if (!currentAnalysis) {
+                showError("Please analyze an IP first before using the AI.");
+                return;
+            }
+            geminiExplainPanel.style.display = 'block';
+            geminiExplainContent.innerHTML = '<p class="loading-text">Asking the AI to explain this... please wait.</p>';
+
+            // --- 1. Get API Key ---
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+
+            if (!apiKey || apiKey === "AIzaSyCWL3tnKvemKautEeN9tfU5yRIpzd9eeSs") {
+                // --- SIMULATION MODE ---
+                // If no API key, run the fake function instead.
+                console.warn("API_KEY is not set. Running in simulation mode.");
+                geminiExplainContent.innerHTML = '<p class="loading-text">Running in simulation mode (no API key detected)...</p>';
+                
+                // We still build the prompt to show it in the fake response
+                const systemPrompt = "You are a helpful teaching assistant... (full prompt hidden in simulation)";
+                const userPrompt = `Explain these IP analysis results for a college student: ${JSON.stringify(currentAnalysis)}`;
+                
+                try {
+                    // Call the FAKE fetch function
+                    const response = await fakeFetchAI(userPrompt); // This is the change
+                    
+                    if (!response.ok) {
+                         throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                    }
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates[0].content) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        geminiExplainContent.innerHTML = simpleMarkdownToHtml(text);
+                    } else {
+                        throw new Error("No content in AI response.");
+                    }
+
+                } catch (error) {
+                    console.error("Gemini API error (simulation):", error);
+                    geminiExplainContent.innerHTML = `<p class="error-text">Error: Could not get explanation. Check console for details.</p>`;
+                }
+                return; // Stop execution here
+                // --- END SIMULATION MODE ---
+            }
+
+            // --- 2. Build the Prompts (if API key exists) ---
+            const systemPrompt = `You are a helpful and concise networking teaching assistant. A student has used a tool to analyze an IP address. Your job is to explain the results clearly and simply.
+- Do not just repeat the data; explain *what it means*.
+- Be encouraging and educational.
+- Use markdown for formatting (bold, italics, lists).
+- Keep your answer to about 3-5 short paragraphs.
+- The input will be a JSON object of the analysis. Do not mention the JSON.
+- Example: If you see "class: A", say "This is a **Class A** address, which is used for..."
+- Example: If you see "totalHosts: 65534", say "This network supports **65,534 usable devices** (like computers or phones)."`;
+            
+            const userPrompt = `Here are my results. Can you please explain them to me?
+${JSON.stringify(currentAnalysis, null, 2)}`;
+            
+            // 3. Build the Payload
+            const payload = {
+                contents: [
+                    { role: "user", parts: { text: userPrompt } }
+                ],
+                systemInstruction: {
+                    parts: { text: systemPrompt }
+                }
+            };
+            
+            // 4. Make the API call with backoff
+            try {
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                     const errorData = await response.json();
+                     console.error("API Error Response:", errorData);
+                     throw new Error(`API returned ${response.status}: ${errorData.error.message}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates[0].content) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    geminiExplainContent.innerHTML = simpleMarkdownToHtml(text);
+                } else {
+                     console.warn("No valid content in API response:", result);
+                    throw new Error("No content in AI response.");
+                }
+
+            } catch (error) {
+                console.error("Gemini API error:", error);
+                geminiExplainContent.innerHTML = `<p class="error-text">Error: Could not get explanation. ${error.message}</p>`;
+            }
+        }
+        
+        // Initial call to populate the visualization bar on load
+        updateVisualizationBar(-1); // Pass -1 to not show a marker
+        
+        // console.log("Script init done. Ready for user input.");
+
+        // --- NEW FEATURE: Network Division & Subnet Allocation ---
+
+        // Global var to hold subnet results for AI
+        let currentSubnetAnalysis = null;
+        let currentSubnetBase = null; // To store what we based the division on
+
+        /**
+         * Toggles the input panels for equal vs. unequal division
+         */
+        function toggleDivisionMethod() {
+            // --- MODIFIED for Customer Feature ---
+            if (divMethodEqual.checked) {
+                divEqualPanel.classList.remove('hidden');
+                divUnequalPanel.classList.add('hidden');
+                divCustomerPanel.classList.add('hidden');
+            } else if (divMethodUnequal.checked) {
+                divEqualPanel.classList.add('hidden');
+                divUnequalPanel.classList.remove('hidden');
+                divCustomerPanel.classList.add('hidden');
+            } else { // Customer is checked
+                divEqualPanel.classList.add('hidden');
+                divUnequalPanel.classList.add('hidden');
+                divCustomerPanel.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Dynamically generates input boxes for VLSM host requirements
+         */
+        function generateHostInputs() {
+            const count = parseInt(divUnequalNetworks.value) || 0;
+            divUnequalHostInputs.innerHTML = ''; // Clear previous inputs
+            
+            for (let i = 1; i <= count; i++) {
+                const inputGroup = `
+                    <div>
+                        <label for="hostReq${i}" class="block text-sm font-medium text-gray-700">Network ${i} Hosts:</label>
+                        <input type="text" id="hostReq${i}" class="unequal-host-req mt-1 block w-full" style="font-size: 1rem; padding: 10px;" placeholder="e.g., 100">
+                    </div>
+                `;
+                divUnequalHostInputs.innerHTML += inputGroup;
+            }
+        }
+
+        /**
+         * Shows an error in the division tool's error panel
+         */
+        function showDivError(message) {
+            divErrorMessage.textContent = message;
+            divErrorPanel.classList.remove('hidden');
+            divResultsPanel.classList.add('hidden');
+        }
+
+        /**
+         * Resets the entire network division tool
+         */
+        function resetDivision() {
+            // No longer needs to clear IP/Mask, as they are global
+            divEqualNetworks.value = '';
+            divUnequalNetworks.value = '';
+            divUnequalHostInputs.innerHTML = '';
+            
+            // --- MODIFIED for Customer Feature ---
+            divCustomerCount.value = '';
+            divCustomerHostInputs.innerHTML = '';
+            divMethodEqual.checked = true;
+            toggleDivisionMethod();
+            // --- End Modification ---
+
+            divErrorPanel.classList.add('hidden');
+            divResultsPanel.classList.add('hidden');
+            divResultsPanel.classList.remove('animate-fade-in'); // --- UI/UX Animation ---
+            divGeminiExplainPanel.classList.add('hidden');
+            divTableHead.innerHTML = '';
+            divTableBody.innerHTML = '';
+            currentSubnetAnalysis = null;
+            currentSubnetBase = null;
+        }
+
+        /**
+         * Main handler for "Analyze Subnets" button
+         */
+        function handleSubnetAnalysis() {
+            divErrorPanel.classList.add('hidden');
+            divGeminiExplainPanel.classList.add('hidden');
+
+            // 1. Validate Base IP and Mask (REUSING existing functions from Section 1)
+            const ipStr = ipInput.value.trim(); // CHANGED
+            const maskStr = maskInput.value.trim(); // CHANGED
+            
+            const startOctets = validateIP(ipStr);
+            if (!startOctets) {
+                showDivError("Invalid IP Address in Section 1.");
+                return;
+            }
+            
+            const startMask = validateMask(maskStr);
+            if (!startMask) {
+                showDivError("Invalid Subnet Mask in Section 1.");
+                return;
+            }
+
+            // 2. LOGIC CHANGE:
+            //    Always find the Network ID from the user's input,
+            //    then use that as the starting point for division.
+            const startIpLong = ipToLong(startOctets);
+            const networkIdLong = (startIpLong & startMask.maskLong) >>> 0;
+            
+            currentSubnetBase = { // Store for AI
+                network: longToIp(networkIdLong).join('.'),
+                mask: `/${startMask.prefix}`
+            };
+
+            let results = [];
+            const divisionType = divMethodEqual.checked ? 'equal' : (divMethodUnequal.checked ? 'unequal' : 'customer');
+
+            // 3. Branch logic for Equal vs. Unequal
+            if (divisionType === 'equal') {
+                const numNetworks = parseInt(divEqualNetworks.value);
+                if (isNaN(numNetworks) || numNetworks <= 0) {
+                    showDivError("Please enter a valid number of networks.");
+                    return;
+                }
+                results = analyzeEqualSubnets(networkIdLong, startMask, numNetworks);
+
+            } else if (divisionType === 'unequal') {
+                // Get all host counts from the dynamic inputs
+                const hostInputs = document.querySelectorAll('.unequal-host-req');
+                if (hostInputs.length === 0) {
+                    showDivError("Please enter the number of networks and their host counts.");
+                    return;
+                }
+
+                // Create a list of objects { req: 100, id: 1 } to track them
+                let hostReqs = [];
+                let invalidInput = false;
+                hostInputs.forEach((input, index) => {
+                    const req = parseInt(input.value);
+                    if (isNaN(req) || req <= 0) {
+                        invalidInput = true;
+                    }
+                    hostReqs.push({ req: req, id: index + 1, name: `Network ${index + 1}` });
+                });
+
+                if (invalidInput) {
+                    showDivError("Please enter a valid, positive number for all host counts.");
+                    return;
+                }
+                
+                // Sort descending for VLSM
+                hostReqs.sort((a, b) => b.req - a.req);
+                
+                results = analyzeUnequalSubnets(networkIdLong, startMask, hostReqs);
+
+            // --- NEW FEATURE: Customer Division Logic ---
+            } else if (divisionType === 'customer') {
+                results = analyzeCustomerSubnets(networkIdLong, startMask);
+            }
+            // --- END NEW FEATURE ---
+
+
+            // 4. Display results or error
+            if (typeof results === 'string') {
+                // An error message was returned
+                showDivError(results);
+            } else {
+                // Success
+                currentSubnetAnalysis = results; // Save for AI
+                displaySubnetTable(results, divisionType);
+                divResultsPanel.classList.remove('hidden');
+                divResultsPanel.classList.add('animate-fade-in'); // --- UI/UX Animation ---
+            }
+        }
+
+        /**
+         * Calculates the required host bits for a number of hosts
+         */
+        function getRequiredHostBits(numHosts) {
+            let h = 0;
+            // Find smallest 'h' where (2^h) - 2 >= numHosts
+            while ((2**h) - 2 < numHosts) {
+                h++;
+                if (h > 32) return -1; // Impossible
+            }
+            return h;
+        }
+
+        /**
+         * Logic for Equal Subnet Division
+         */
+        function analyzeEqualSubnets(networkIdLong, startMask, numNetworks) {
+            // 1. Find bits to borrow
+            let bitsToBorrow = 0;
+            while (2**bitsToBorrow < numNetworks) {
+                bitsToBorrow++;
+            }
+            
+            const newPrefix = startMask.prefix + bitsToBorrow;
+            if (newPrefix > 30) { // /31 and /32 are special cases
+                return `Cannot create ${numNetworks} subnets. The required new prefix /${newPrefix} is too large.`;
+            }
+            
+            const newHostBits = 32 - newPrefix;
+            const subnetSize = 2**newHostBits;
+            const analysisResults = [];
+            const finalAddressInBlock = (networkIdLong | (~startMask.maskLong)) >>> 0;
+            
+            for (let i = 0; i < numNetworks; i++) {
+                const currentNetIdLong = (networkIdLong + (i * subnetSize)) >>> 0;
+                
+                // Check if we've gone outside the original block
+                if (currentNetIdLong > finalAddressInBlock) {
+                    analysisResults.push({
+                        name: `Network ${i + 1}`,
+                        error: "Out of Space"
+                    });
+                    continue;
+                }
+
+                const newMask = prefixToMask(newPrefix); // REUSING existing function
+                const broadcastLong = (currentNetIdLong | (~newMask.maskLong)) >>> 0;
+                
+               const allocated = subnetSize - 2; // all usable addresses
+const remaining = 0;
+const lacking = 0;
+
+analysisResults.push({
+    name: `Network ${i + 1}`,
+    networkId: longToIp(currentNetIdLong).join('.'),
+    subnetMask: `${newMask.maskOctets.join('.')} (/${newPrefix})`,
+    firstAddress: longToIp(currentNetIdLong + 1).join('.'),
+    lastAddress: longToIp(broadcastLong - 1).join('.'),
+    broadcastAddress: longToIp(broadcastLong).join('.'),
+    totalAddresses: subnetSize,
+    usableAddresses: subnetSize - 2,
+    allocated: allocated,
+    remaining: remaining,
+    lacking: lacking
+});
+
+            }
+            return analysisResults;
+        }
+        
+        /**
+         * Logic for Unequal Subnet Division (VLSM)
+         * MODIFIED: To be reusable for customer division
+         * @param {number} networkIdLong - The starting Network ID (long integer)
+         * @param {object} startMask - The mask object for the *entire block* being divided
+         * @param {Array} hostReqs - Array of {req, id, name} objects
+         */
+        function analyzeUnequalSubnets(networkIdLong, startMask, hostReqs) {
+            const analysisResults = [];
+            let currentAvailableIpLong = networkIdLong;
+            const finalAddressInBlock = (networkIdLong | (~startMask.maskLong)) >>> 0;
+
+            for (let i = 0; i < hostReqs.length; i++) {
+                const req = hostReqs[i].req;
+                const name = hostReqs[i].name; // Use the provided name
+                
+                // 1. Find host bits needed
+                const hostBits = getRequiredHostBits(req);
+                if (hostBits === -1) {
+                    analysisResults.push({ name: `${name} (${req} hosts)`, error: "Impossible size", id: hostReqs[i].id });
+                    continue;
+                }
+                
+                const newPrefix = 32 - hostBits;
+                if (newPrefix < startMask.prefix) {
+                    analysisResults.push({ name: `${name} (${req} hosts)`, error: "Larger than start block", id: hostReqs[i].id });
+                    continue; // This network is too big
+                }
+
+                const newMask = prefixToMask(newPrefix); // REUSING
+                const subnetSize = 2**hostBits;
+
+                // 2. Find next available block boundary by "aligning" the IP
+                const alignedNetIdLong = (currentAvailableIpLong + subnetSize - 1) & newMask.maskLong;
+                
+                // Use the aligned ID as our new Network ID
+                currentAvailableIpLong = alignedNetIdLong; 
+                const broadcastLong = (currentAvailableIpLong | (~newMask.maskLong)) >>> 0;
+                
+                // 3. Check if this subnet fits inside the original block
+                if (broadcastLong > finalAddressInBlock) {
+                    analysisResults.push({ name: `${name} (${req} hosts)`, error: "Out of Space", id: hostReqs[i].id });
+                    // Don't stop, just mark this one and let others try to fit
+                    continue; 
+                }
+
+                const usable = (subnetSize - 2);
+                analysisResults.push({
+                    name: `${name} (${req} hosts)`,
+                    networkId: longToIp(currentAvailableIpLong).join('.'), // REUSING
+                    subnetMask: `${newMask.maskOctets.join('.')} (/${newPrefix})`,
+                    firstAddress: longToIp(currentAvailableIpLong + 1).join('.'),
+                    lastAddress: longToIp(broadcastLong - 1).join('.'),
+                    broadcastAddress: longToIp(broadcastLong).join('.'),
+                    totalAddresses: subnetSize,
+                    usableAddresses: usable,
+                    allocated: req,
+                    remaining: usable - req,
+                    lacking: Math.max(0, req - usable),
+                    id: hostReqs[i].id, // Keep original ID for re-sorting
+                    // Store block info for hierarchical use
+                    block: {
+                        networkIdLong: currentAvailableIpLong,
+                        mask: newMask
+                    }
+                });
+
+                // 4. Set next available IP for the next loop
+                currentAvailableIpLong = (broadcastLong + 1) >>> 0;
+            }
+            
+            return analysisResults;
+        }
+
+        /**
+         * Builds and displays the dynamic results table
+         */
+        function displaySubnetTable(results, divisionType) {
+            // --- 1. Build Header ---
+            divTableHead.innerHTML = '';
+            // --- MODIFIED: Use res.name for header ---
+            let headerHTML = '<tr><th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-10">Description</th>';
+            results.forEach((res, i) => {
+                headerHTML += `<th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${res.name}</th>`;
+            });
+            // --- End Modification ---
+            headerHTML += '</tr>';
+            divTableHead.innerHTML = headerHTML;
+
+            // --- 2. Build Body ---
+            divTableBody.innerHTML = '';
+            const rows = [
+                { key: 'networkId', label: 'Network ID' },
+                { key: 'subnetMask', label: 'Subnet Mask' },
+                { key: 'firstAddress', label: 'First Address' },
+                { key: 'lastAddress', label: 'Last Address' },
+                { key: 'broadcastAddress', label: 'Broadcast Address' },
+                { key: 'totalAddresses', label: 'Total Addresses' },
+                { key: 'usableAddresses', label: 'Usable Addresses' },
+            ];
+
+ // ✅ Always include Allocated/Remaining/Lacking for all methods
+if (divisionType === 'equal' || divisionType === 'unequal' || divisionType === 'customer') {
+                rows.push({ key: 'allocated', label: 'Allocated' });
+                rows.push({ key: 'remaining', label: 'Remaining' });
+                rows.push({ key: 'lacking', label: 'Lacking' });
+            }
+
+            rows.forEach(row => {
+                let rowHTML = `<tr><td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">${row.label}</td>`;
+                results.forEach(res => {
+                    if (res.error) {
+                        rowHTML += `<td class="px-4 py-3 whitespace-nowrap text-sm text-red-600 font-medium">${res.error}</td>`;
+                    } else {
+                        rowHTML += `<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${res[row.key]}</td>`;
+                    }
+                });
+                rowHTML += '</tr>';
+                divTableBody.innerHTML += rowHTML;
+            });
+            if (divisionType === 'equal') {
+    const totalAllocated = results.reduce((a, r) => a + (parseInt(r.allocated) || 0), 0);
+    const totalRemaining = results.reduce((a, r) => a + (parseInt(r.remaining) || 0), 0);
+    const totalLacking = results.reduce((a, r) => a + (parseInt(r.lacking) || 0), 0);
+    divTableBody.innerHTML += `
+      <tr class="bg-gray-100 font-semibold">
+        <td class="px-4 py-3">Total</td>
+        <td colspan="${results.length}" class="px-4 py-3 text-gray-800">
+          Allocated: ${totalAllocated} | Remaining: ${totalRemaining} | Lacking: ${totalLacking}
+        </td>
+      </tr>`;
+}
+
+        }
+        
+        /**
+         * AI Explanation for Subnets (reuses simulation logic)
+         */
+        async function getAISubnetExplanation() {
+            if (!currentSubnetAnalysis) {
+                showDivError("Please analyze a subnet division first.");
+                return;
+            }
+            divGeminiExplainPanel.classList.remove('hidden');
+            divGeminiExplainContent.innerHTML = '<p class="loading-text">Asking the AI to explain this subnetting... please wait.</p>';
+
+            // --- 1. Get API Key ---
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+
+            // Create a summary for the AI
+            let requirements = '';
+            if (divMethodEqual.checked) {
+                requirements = `${divEqualNetworks.value} equal networks`;
+            } else if (divMethodUnequal.checked) {
+                requirements = `${currentSubnetAnalysis.map(n => n.allocated).join(', ')} hosts`;
+            } else {
+                requirements = "Hierarchical division for " + divCustomerCount.value + " customers.";
+            }
+
+            const analysisSummary = {
+                startingNetwork: `${currentSubnetBase.network} ${currentSubnetBase.mask}`,
+                divisionMethod: divMethodEqual.checked ? 'equal' : (divMethodUnequal.checked ? 'unequal' : 'customer'),
+                requirements: requirements,
+                results: currentSubnetAnalysis
+            };
+
+            if (!apiKey || apiKey === "AIzaSyCWL3tnKvemKautEeN9tfU5yRIpzd9eeSs") {
+                // --- SIMULATION MODE ---
+                console.warn("API_KEY is not set. Running in simulation mode.");
+                divGeminiExplainContent.innerHTML = '<p class="loading-text">Running in simulation mode (no API key detected)...</p>';
+                
+                const userPrompt = `Explain this subnetting result for a college student: ${JSON.stringify(analysisSummary, null, 2)}`;
+                
+                try {
+                    // Call the FAKE fetch function (reusing the old one is fine)
+                    const response = await fakeFetchAI(userPrompt); // REUSING
+                    
+                    if (!response.ok) {
+                         throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                    }
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates[0].content) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        divGeminiExplainContent.innerHTML = simpleMarkdownToHtml(text);
+                    } else {
+                        throw new Error("No content in AI response.");
+                    }
+
+                } catch (error) {
+                    console.error("Gemini API error (simulation):", error);
+                    divGeminiExplainContent.innerHTML = `<p class="error-text">Error: Could not get explanation. Check console for details.</p>`;
+                }
+                return;
+                // --- END SIMULATION MODE ---
+            }
+
+            // --- 2. Build the Prompts (if API key exists) ---
+            const systemPrompt = `You are a helpful and concise networking teaching assistant. A student has used a tool to plan a network division (subnetting). Your job is to explain the results clearly.
+- Do not just repeat the data; explain *what it means*.
+- Explain *why* the subnets are the size they are.
+- If it's VLSM (unequal), explain how sorting by size is important for efficiency.
+- If it's hierarchical/customer, explain how the network was first divided among customers, and *then* subdivided for each customer's needs.
+- If it's equal, explain how the bits were borrowed from the host portion.
+- Use markdown for formatting.
+- Keep your answer to 3-5 short paragraphs.
+- The input will be a JSON object of the analysis. Do not mention the JSON.`;
+            
+            const userPrompt = `Here is my subnetting plan. Can you please explain it to me?
+${JSON.stringify(analysisSummary, null, 2)}`;
+            
+            // 3. Build the Payload
+            const payload = {
+                contents: [
+                    { role: "user", parts: { text: userPrompt } }
+                ],
+                systemInstruction: {
+                    parts: { text: systemPrompt }
+                }
+            };
+            
+            // 4. Make the API call
+            try {
+                const response = await fetchWithBackoff(apiUrl, { // REUSING
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error("API Error Response:", errorData);
+                    throw new Error(`API returned ${response.status}: ${errorData.error.message}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates[0].content) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    divGeminiExplainContent.innerHTML = simpleMarkdownToHtml(text);
+                } else {
+                    console.warn("No valid content in API response:", result);
+                    throw new Error("No content in AI response.");
+                }
+
+            } catch (error) {
+                console.error("Gemini API error:", error);
+                divGeminiExplainContent.innerHTML = `<p class="error-text">Error: Could not get explanation. ${error.message}</p>`;
+            }
+        }
+        
+        // --- NEW FEATURE: Customer Division Helper Functions ---
+
+        /**
+         * Dynamically generates sections for each customer
+         */
+        function generateCustomerInputs() {
+            const count = parseInt(divCustomerCount.value) || 0;
+            divCustomerHostInputs.innerHTML = ''; // Clear previous
+            
+            for (let i = 1; i <= count; i++) {
+                const customerSection = document.createElement('div');
+                customerSection.className = 'p-4 border border-gray-200 rounded-lg bg-gray-50';
+                customerSection.innerHTML = `
+                    <h4 class="text-lg font-semibold text-gray-800">Customer ${i}</h4>
+                    <div class="mt-2">
+                        <label for="cust${i}NetCount" class="text-sm font-medium text-gray-700">Number of Networks for Customer ${i}:</label>
+                        <input type="text" id="cust${i}NetCount" class="customer-net-count" data-customer-id="${i}" placeholder="e.g., 3">
+                    </div>
+                    <div id="cust${i}HostInputs" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        </div>
+                `;
+                divCustomerHostInputs.appendChild(customerSection);
+            }
+
+            // Add event listeners to the new "Number of Networks" inputs
+            document.querySelectorAll('.customer-net-count').forEach(input => {
+                input.addEventListener('input', generateCustomerHostInputs);
+            });
+        }
+
+        /**
+         * Dynamically generates host input boxes for a *specific* customer
+         * @param {Event} event - The input event from the "Number of Networks" box
+         */
+        function generateCustomerHostInputs(event) {
+            const customerId = event.target.dataset.customerId;
+            const count = parseInt(event.target.value) || 0;
+            const container = document.getElementById(`cust${customerId}HostInputs`);
+            
+            container.innerHTML = ''; // Clear previous
+            for (let i = 1; i <= count; i++) {
+                container.innerHTML += `
+                    <div>
+                        <label for="cust${customerId}Net${i}" class="block text-sm font-medium text-gray-700">Network ${i} Hosts:</label>
+                        <input type="text" id="cust${customerId}Net${i}" class="customer-${customerId}-host-req mt-1 block w-full" style="font-size: 1rem; padding: 10px;" placeholder="e.g., 50">
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * Calculates the total size (in IP addresses) needed to fit a list of host requests
+         */
+        function getTotalBlockSize(hostReqs) {
+            let totalSize = 0;
+            for (const req of hostReqs) {
+                const hostBits = getRequiredHostBits(req);
+                if (hostBits === -1) return -1; // Impossible request
+                totalSize += 2**hostBits;
+            }
+            return totalSize;
+        }
+
+        /**
+         * Main logic for Hierarchical (Customer) Division
+         */
+        function analyzeCustomerSubnets(networkIdLong, startMask) {
+            const customerCount = parseInt(divCustomerCount.value) || 0;
+            if (customerCount === 0) return "Please enter a valid number of customers.";
+
+            let parentHostReqs = [];
+            let allChildReqs = [];
+            
+            // 1. Gather all requests and calculate total block size for each customer
+            for (let i = 1; i <= customerCount; i++) {
+                const hostInputs = document.querySelectorAll(`.customer-${i}-host-req`);
+                if (hostInputs.length === 0) {
+                    return `Please define the networks for Customer ${i}.`;
+                }
+                
+                let customerHostList = [];
+                let invalidInput = false;
+                hostInputs.forEach((input, j) => {
+                    const req = parseInt(input.value);
+                    if (isNaN(req) || req <= 0) {
+                        invalidInput = true;
+                    }
+                    customerHostList.push({ req: req, id: j + 1, name: `Cust ${i} - Net ${j + 1}` });
+                });
+
+                if (invalidInput) {
+                    return `Please enter valid host counts for Customer ${i}.`;
+                }
+
+                // Sort this customer's list for their internal VLSM
+                customerHostList.sort((a, b) => b.req - a.req);
+                allChildReqs.push(customerHostList); // Store for later
+
+                // Calculate the *total IPs* this customer needs
+                const totalSize = getTotalBlockSize(customerHostList.map(h => h.req));
+                if (totalSize === -1) return `Impossible host request for Customer ${i}.`;
+
+                // The "host requirement" for the parent VLSM is the total IPs needed,
+                // minus 2 (to make it fit the 2^h - 2 formula)
+                parentHostReqs.push({ req: totalSize - 2, id: i, name: `Customer ${i}` });
+            }
+
+            // 2. Sort parent requests (customers) by size
+            parentHostReqs.sort((a, b) => b.req - a.req);
+
+            // 3. Allocate blocks to *customers* (Parent VLSM)
+            const customerBlocks = analyzeUnequalSubnets(networkIdLong, startMask, parentHostReqs);
+
+            let finalSubnetList = [];
+            
+            // 4. Sub-divide each customer's block (Child VLSM)
+            for (const customer of customerBlocks) {
+                if (customer.error) {
+                    // This customer couldn't be allocated space
+                    const childReqs = allChildReqs.find(list => list[0].name.startsWith(`Cust ${customer.id}`));
+                    childReqs.forEach(req => {
+                        finalSubnetList.push({ name: req.name, error: "No space for customer", id: req.id });
+                    });
+                    continue;
+                }
+
+                // Get the host requests for this specific customer
+                const childReqs = allChildReqs.find(list => list[0].name.startsWith(`Cust ${customer.id}`));
+                
+                // Run VLSM *inside* this customer's new block
+                const childSubnets = analyzeUnequalSubnets(
+                    customer.block.networkIdLong,
+                    customer.block.mask,
+                    childReqs
+                );
+                
+                finalSubnetList.push(...childSubnets);
+            }
+
+            // 5. Re-sort the final list by customer and then network ID
+            finalSubnetList.sort((a, b) => {
+                // Extract numbers. E.g., "Cust 1 - Net 3" -> [1, 3]
+                const aNums = a.name.match(/\d+/g);
+                const bNums = b.name.match(/\d+/g);
+                
+                if (!aNums) return -1;
+                if (!bNums) return 1;
+
+                const [aCust, aNet] = aNums.map(Number);
+                const [bCust, bNet] = bNums.map(Number);
+                
+                if (aCust !== bCust) return aCust - bCust;
+                return aNet - bNet;
+            });
+            
+            return finalSubnetList;
+        }
+
+        // --- END NEW FEATURE ---
+
+        // ===================================================================
+        // ===== NEW: ISP Block Allocation Feature (Type 4) =====
+        // ===================================================================
+        (function() {
+            // --- DOM Elements ---
+            const ispStartIp = document.getElementById('ispStartIp');
+            const ispPrefix = document.getElementById('ispPrefix');
+            const ispPrefillBtn = document.getElementById('ispPrefillBtn');
+            const ispAddGroupBtn = document.getElementById('ispAddGroupBtn');
+            const ispGroupsContainer = document.getElementById('ispGroupsContainer');
+            const ispResetBtn = document.getElementById('ispResetBtn');
+            const ispAnalyzeBtn = document.getElementById('ispAnalyzeBtn');
+            const ispErrorPanel = document.getElementById('ispErrorPanel');
+            const ispErrorMessage = document.getElementById('ispErrorMessage');
+            const ispResultsPanel = document.getElementById('ispResultsPanel');
+            const ispSummaryGrid = document.getElementById('ispSummaryGrid');
+            const ispSpaceBar = document.getElementById('ispSpaceBar');
+            const ispBarLegend = document.getElementById('ispBarLegend');
+            const ispTableHead = document.getElementById('ispTableHead');
+            const ispTableBody = document.getElementById('ispTableBody');
+
+            let ispGroupCount = 0;
+            const groupColors = [
+                '#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6',
+                '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16'
+            ];
+
+            // --- Event Listeners ---
+            ispPrefillBtn.addEventListener('click', prefillTextbookExample);
+            ispAddGroupBtn.addEventListener('click', () => addGroup());
+            ispResetBtn.addEventListener('click', resetISP);
+            ispAnalyzeBtn.addEventListener('click', handleISPAnalysis);
+
+            /**
+             * Adds a customer group card to the UI
+             */
+            function addGroup(customers = '', addresses = '') {
+                ispGroupCount++;
+                const groupId = ispGroupCount;
+                const card = document.createElement('div');
+                card.className = 'isp-group-card';
+                card.id = `ispGroup${groupId}`;
+                card.dataset.groupId = groupId;
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h4>👥 Group ${groupId}</h4>
+                        <button class="isp-add-remove-btn remove" onclick="this.closest('.isp-group-card').remove()">✕ Remove</button>
+                    </div>
+                    <div class="isp-input-row">
+                        <div>
+                            <label>Number of Customers:</label>
+                            <input type="text" class="isp-cust-count" placeholder="e.g., 64" value="${customers}">
+                        </div>
+                        <div>
+                            <label>Addresses per Customer:</label>
+                            <input type="text" class="isp-addr-per-cust" placeholder="e.g., 256" value="${addresses}">
+                        </div>
+                    </div>
+                `;
+                ispGroupsContainer.appendChild(card);
+            }
+
+            /**
+             * Pre-fills the textbook example
+             */
+            function prefillTextbookExample() {
+                resetISP();
+                ispStartIp.value = '190.100.0.0';
+                ispPrefix.value = '/16';
+                addGroup('64', '256');
+                addGroup('128', '128');
+                addGroup('128', '64');
+            }
+
+            /**
+             * Resets the ISP section
+             */
+            function resetISP() {
+                ispStartIp.value = '';
+                ispPrefix.value = '';
+                ispGroupsContainer.innerHTML = '';
+                ispGroupCount = 0;
+                ispErrorPanel.classList.add('hidden');
+                ispResultsPanel.classList.add('hidden');
+                ispSummaryGrid.innerHTML = '';
+                ispSpaceBar.innerHTML = '';
+                ispBarLegend.innerHTML = '';
+                ispTableHead.innerHTML = '';
+                ispTableBody.innerHTML = '';
+            }
+
+            function showISPError(msg) {
+                ispErrorMessage.textContent = msg;
+                ispErrorPanel.classList.remove('hidden');
+                ispResultsPanel.classList.add('hidden');
+            }
+
+            /**
+             * Finds the smallest power-of-2 block size that fits N addresses
+             * Returns { prefix, blockSize, hostBits }
+             */
+            function getBlockForAddresses(numAddresses) {
+                let hostBits = 0;
+                while ((1 << hostBits) < numAddresses) {
+                    hostBits++;
+                    if (hostBits > 32) return null;
+                }
+                return {
+                    hostBits: hostBits,
+                    blockSize: 1 << hostBits,
+                    prefix: 32 - hostBits
+                };
+            }
+
+            /**
+             * Main ISP allocation logic
+             */
+            function handleISPAnalysis() {
+                ispErrorPanel.classList.add('hidden');
+
+                // 1. Validate starting address
+                const ipStr = ispStartIp.value.trim();
+                const prefixStr = ispPrefix.value.trim();
+
+                const octets = validateIP(ipStr);
+                if (!octets) { showISPError('Invalid starting IP address.'); return; }
+
+                let prefix;
+                if (prefixStr.startsWith('/')) {
+                    prefix = parseInt(prefixStr.substring(1));
+                } else {
+                    prefix = parseInt(prefixStr);
+                }
+                if (isNaN(prefix) || prefix < 0 || prefix > 30) {
+                    showISPError('Invalid prefix. Must be between /0 and /30.');
+                    return;
+                }
+
+                const startLong = ipToLong(octets);
+                const maskObj = prefixToMask(prefix);
+                const networkIdLong = (startLong & maskObj.maskLong) >>> 0;
+                const totalBlockSize = 1 << (32 - prefix);
+                const blockEndLong = (networkIdLong + totalBlockSize - 1) >>> 0;
+
+                // 2. Gather groups
+                const groupCards = ispGroupsContainer.querySelectorAll('.isp-group-card');
+                if (groupCards.length === 0) {
+                    showISPError('Please add at least one customer group.');
+                    return;
+                }
+
+                let groups = [];
+                for (let i = 0; i < groupCards.length; i++) {
+                    const card = groupCards[i];
+                    const custCount = parseInt(card.querySelector('.isp-cust-count').value);
+                    const addrPerCust = parseInt(card.querySelector('.isp-addr-per-cust').value);
+
+                    if (isNaN(custCount) || custCount <= 0) {
+                        showISPError(`Group ${i + 1}: Invalid number of customers.`);
+                        return;
+                    }
+                    if (isNaN(addrPerCust) || addrPerCust <= 0) {
+                        showISPError(`Group ${i + 1}: Invalid addresses per customer.`);
+                        return;
+                    }
+
+                    // Check that addrPerCust is a power of 2
+                    if ((addrPerCust & (addrPerCust - 1)) !== 0) {
+                        showISPError(`Group ${i + 1}: Addresses per customer (${addrPerCust}) must be a power of 2 (e.g., 64, 128, 256).`);
+                        return;
+                    }
+
+                    groups.push({
+                        groupIndex: i + 1,
+                        customerCount: custCount,
+                        addressesPerCustomer: addrPerCust,
+                        totalAddresses: custCount * addrPerCust
+                    });
+                }
+
+                // 3. Sort groups by addressesPerCustomer DESCENDING (allocate largest first)
+                groups.sort((a, b) => b.addressesPerCustomer - a.addressesPerCustomer);
+
+                // 4. Sequential allocation
+                let currentIpLong = networkIdLong;
+                let allAllocations = []; // flat list of all individual customer allocations
+                let groupSummaries = []; // summary per group
+                let totalAllocated = 0;
+                let allocationError = false;
+
+                for (const group of groups) {
+                    const blockInfo = getBlockForAddresses(group.addressesPerCustomer);
+                    if (!blockInfo) {
+                        showISPError(`Group ${group.groupIndex}: Block size too large.`);
+                        return;
+                    }
+
+                    const custMask = prefixToMask(blockInfo.prefix);
+                    let groupStartLong = currentIpLong;
+                    let customersAllocated = 0;
+
+                    for (let c = 0; c < group.customerCount; c++) {
+                        // Align to boundary
+                        const aligned = ((currentIpLong + blockInfo.blockSize - 1) & custMask.maskLong) >>> 0;
+                        const custNetId = aligned;
+                        const custBroadcast = (custNetId + blockInfo.blockSize - 1) >>> 0;
+
+                        if (custBroadcast > blockEndLong) {
+                            allAllocations.push({
+                                group: group.groupIndex,
+                                customerNum: c + 1,
+                                error: 'Out of space'
+                            });
+                            allocationError = true;
+                            continue;
+                        }
+
+                        allAllocations.push({
+                            group: group.groupIndex,
+                            customerNum: c + 1,
+                            networkId: longToIp(custNetId).join('.'),
+                            prefix: blockInfo.prefix,
+                            mask: custMask.maskOctets.join('.'),
+                            range: `${longToIp(custNetId).join('.')} – ${longToIp(custBroadcast).join('.')}`,
+                            firstAddr: longToIp(custNetId + 1).join('.'),
+                            lastAddr: longToIp(custBroadcast - 1).join('.'),
+                            broadcast: longToIp(custBroadcast).join('.'),
+                            totalAddresses: blockInfo.blockSize,
+                            usableHosts: blockInfo.blockSize - 2
+                        });
+
+                        customersAllocated++;
+                        totalAllocated += blockInfo.blockSize;
+                        currentIpLong = (custBroadcast + 1) >>> 0;
+                    }
+
+                    groupSummaries.push({
+                        groupIndex: group.groupIndex,
+                        customerCount: group.customerCount,
+                        addressesPerCustomer: group.addressesPerCustomer,
+                        perCustPrefix: blockInfo.prefix,
+                        totalGroupAddresses: customersAllocated * blockInfo.blockSize,
+                        startAddress: longToIp(groupStartLong).join('.'),
+                        endAddress: currentIpLong > networkIdLong ? longToIp(currentIpLong - 1).join('.') : 'N/A',
+                        color: groupColors[(group.groupIndex - 1) % groupColors.length]
+                    });
+                }
+
+                const remainingAddresses = totalBlockSize - totalAllocated;
+                const remainingStart = currentIpLong;
+                const remainingEnd = blockEndLong;
+
+                // 5. Display results
+                displayISPResults({
+                    networkId: longToIp(networkIdLong).join('.'),
+                    prefix: prefix,
+                    totalBlockSize: totalBlockSize,
+                    totalAllocated: totalAllocated,
+                    remainingAddresses: remainingAddresses,
+                    remainingStart: remainingAddresses > 0 ? longToIp(remainingStart).join('.') : 'N/A',
+                    remainingEnd: remainingAddresses > 0 ? longToIp(remainingEnd).join('.') : 'N/A',
+                    groups: groupSummaries,
+                    allocations: allAllocations,
+                    allocationError: allocationError
+                });
+            }
+
+            /**
+             * Renders the ISP results
+             */
+            function displayISPResults(data) {
+                // --- Summary Cards ---
+                ispSummaryGrid.innerHTML = `
+                    <div class="isp-summary-card">
+                        <div class="card-label">ISP Block</div>
+                        <div class="card-value text-indigo">${data.networkId}/${data.prefix}</div>
+                    </div>
+                    <div class="isp-summary-card">
+                        <div class="card-label">Total Addresses</div>
+                        <div class="card-value">${data.totalBlockSize.toLocaleString()}</div>
+                    </div>
+                    <div class="isp-summary-card">
+                        <div class="card-label">Total Allocated</div>
+                        <div class="card-value text-indigo">${data.totalAllocated.toLocaleString()}</div>
+                    </div>
+                    <div class="isp-summary-card">
+                        <div class="card-label">Remaining Available</div>
+                        <div class="card-value ${data.remainingAddresses > 0 ? 'text-green' : 'text-red'}">${data.remainingAddresses.toLocaleString()}</div>
+                    </div>
+                `;
+
+                // --- Address Space Bar ---
+                let barHTML = '';
+                let legendHTML = '';
+                for (const g of data.groups) {
+                    const pct = (g.totalGroupAddresses / data.totalBlockSize) * 100;
+                    barHTML += `<div class="isp-bar-segment" style="width: ${pct}%; background: ${g.color};">
+                        <span class="isp-bar-tooltip">Group ${g.groupIndex}: ${g.totalGroupAddresses.toLocaleString()} addresses (${pct.toFixed(1)}%)</span>
+                        ${pct > 5 ? `G${g.groupIndex}` : ''}
+                    </div>`;
+                    legendHTML += `<span><span class="legend-dot" style="background: ${g.color};"></span> Group ${g.groupIndex} (${g.customerCount} × ${g.addressesPerCustomer})</span>`;
+                }
+                if (data.remainingAddresses > 0) {
+                    const pct = (data.remainingAddresses / data.totalBlockSize) * 100;
+                    barHTML += `<div class="isp-bar-segment" style="width: ${pct}%; background: #d1d5db;">
+                        <span class="isp-bar-tooltip">Remaining: ${data.remainingAddresses.toLocaleString()} addresses (${pct.toFixed(1)}%)</span>
+                        ${pct > 5 ? 'Free' : ''}
+                    </div>`;
+                    legendHTML += `<span><span class="legend-dot" style="background: #d1d5db;"></span> Remaining (${data.remainingAddresses.toLocaleString()})</span>`;
+                }
+                ispSpaceBar.innerHTML = barHTML;
+                ispBarLegend.innerHTML = legendHTML;
+
+                // --- Detailed Table ---
+                ispTableHead.innerHTML = `<tr>
+                    <th>Group</th>
+                    <th>Customer #</th>
+                    <th>Network ID</th>
+                    <th>Mask (Prefix)</th>
+                    <th>Address Range</th>
+                    <th>Total Addr</th>
+                    <th>Usable Hosts</th>
+                </tr>`;
+
+                let bodyHTML = '';
+
+                // Group headers + customer rows
+                // Sort groups back by groupIndex for display
+                const sortedGroups = [...data.groups].sort((a, b) => a.groupIndex - b.groupIndex);
+
+                for (const g of sortedGroups) {
+                    // Group header row
+                    bodyHTML += `<tr class="group-header-row">
+                        <td colspan="7">📦 Group ${g.groupIndex}: ${g.customerCount} customers × ${g.addressesPerCustomer} addresses/customer = ${g.totalGroupAddresses.toLocaleString()} total (each /${g.perCustPrefix})</td>
+                    </tr>`;
+
+                    // Show first few and last few customers, with ellipsis for large groups
+                    const groupAllocs = data.allocations.filter(a => a.group === g.groupIndex);
+                    const showLimit = 4; // show first N and last N
+
+                    if (groupAllocs.length <= showLimit * 2 + 1) {
+                        // Show all
+                        for (const alloc of groupAllocs) {
+                            bodyHTML += renderAllocationRow(alloc, g);
+                        }
+                    } else {
+                        // Show first few
+                        for (let i = 0; i < showLimit; i++) {
+                            bodyHTML += renderAllocationRow(groupAllocs[i], g);
+                        }
+                        // Ellipsis row
+                        bodyHTML += `<tr><td colspan="7" style="text-align: center; color: #9ca3af; font-style: italic; padding: 6px;">⋮ ${groupAllocs.length - showLimit * 2} more customers ⋮</td></tr>`;
+                        // Show last few
+                        for (let i = groupAllocs.length - showLimit; i < groupAllocs.length; i++) {
+                            bodyHTML += renderAllocationRow(groupAllocs[i], g);
+                        }
+                    }
+                }
+
+                // Remaining row
+                if (data.remainingAddresses > 0) {
+                    bodyHTML += `<tr class="remaining-row">
+                        <td colspan="2">✅ Remaining (Unallocated)</td>
+                        <td class="mono">${data.remainingStart}</td>
+                        <td>—</td>
+                        <td class="mono">${data.remainingStart} – ${data.remainingEnd}</td>
+                        <td>${data.remainingAddresses.toLocaleString()}</td>
+                        <td>—</td>
+                    </tr>`;
+                } else {
+                    bodyHTML += `<tr class="remaining-row">
+                        <td colspan="7" style="text-align: center; color: #dc2626;">⚠️ No addresses remaining — block fully allocated!</td>
+                    </tr>`;
+                }
+
+                ispTableBody.innerHTML = bodyHTML;
+
+                ispResultsPanel.classList.remove('hidden');
+                ispResultsPanel.classList.add('animate-fade-in');
+            }
+
+            function renderAllocationRow(alloc, group) {
+                if (alloc.error) {
+                    return `<tr>
+                        <td>Group ${alloc.group}</td>
+                        <td>Customer ${alloc.customerNum}</td>
+                        <td colspan="5" style="color: #dc2626; font-weight: 600;">${alloc.error}</td>
+                    </tr>`;
+                }
+                return `<tr>
+                    <td style="border-left: 3px solid ${group.color};">Group ${alloc.group}</td>
+                    <td>Customer ${alloc.customerNum}</td>
+                    <td class="mono">${alloc.networkId}/${alloc.prefix}</td>
+                    <td class="mono">${alloc.mask} (/${alloc.prefix})</td>
+                    <td class="mono">${alloc.range}</td>
+                    <td>${alloc.totalAddresses.toLocaleString()}</td>
+                    <td>${alloc.usableHosts.toLocaleString()}</td>
+                </tr>`;
+            }
+
+        })(); // End ISP IIFE
+        // ===== END ISP Block Allocation =====
+
+    </script>
+</body>
+</html>
+
